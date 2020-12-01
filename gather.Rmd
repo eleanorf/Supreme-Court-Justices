@@ -13,23 +13,55 @@ library(readr)
 
 
 ```{r}
-SCDB_2020_01_justiceCentered_Docket <- read_csv("final-app/SCDB_2020_01_justiceCentered_Docket.csv",
-                                                col_types = cols(.default = col_double(),
-                                                                 caseId = col_character(),
-                                                                 docketId = col_character(),
-                                                                 caseIssuesId = col_character(),
-                                                                 voteId = col_character(),
-                                                                 dateDecision = col_character(),
-                                                                 usCite = col_character(),
-                                                                 sctCite = col_character(),
-                                                                 ledCite = col_character(),
-                                                                 lexisCite = col_character(),
-                                                                 chief = col_character(),
-                                                                 caseName = col_character(),
-                                                                 dateArgument = col_character(),
-                                                                 dateRearg = col_character(),
-                                                                 lawMinor = col_character(),
-                                                                 justiceName = col_character()))
-View(SCDB_2020_01_justiceCentered_Docket)
+SCDB_2020_01_justiceCentered_Docket <- 
+  read_csv("final-app/SCDB_2020_01_justiceCentered_Docket.csv",
+           col_types = cols(.default = col_double(),
+                            caseId = col_character(),
+                            docketId = col_character(),
+                            caseIssuesId = col_character(),
+                            voteId = col_character(),
+                            dateDecision = col_character(),
+                            usCite = col_character(),
+                            sctCite = col_character(),
+                            ledCite = col_character(),
+                            lexisCite = col_character(),
+                            chief = col_character(),
+                            caseName = col_character(),
+                            dateArgument = col_character(),
+                            dateRearg = col_character(),
+                            lawMinor = col_character(),
+                            justiceName = col_character()))
+```
+
+```{r}
+SCDB_2020_01_justiceCentered_Citation <- 
+  read_csv("final-app/SCDB_2020_01_justiceCentered_Citation.csv",
+           col_types = cols(.default = col_double(),
+                            caseId = col_character(),
+                            docketId = col_character(),
+                            caseIssuesId = col_character(),
+                            voteId = col_character(),
+                            dateDecision = col_character(),
+                            usCite = col_character(),
+                            sctCite = col_character(),
+                            ledCite = col_character(),
+                            lexisCite = col_character(),
+                            chief = col_character(),
+                            caseName = col_character(),
+                            dateArgument = col_character(),
+                            dateRearg = col_character(),
+                            lawMinor = col_character(),
+                            justiceName = col_character()))
+
+Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>% 
+  select(sctCite, caseId, caseName, dateDecision, dateArgument, chief, issue, issueArea,
+         decisionDirection, justiceName, vote, opinion, direction, majority) %>% 
+  mutate(date = str_sub(dateDecision, -4))
+
+Citation_Data %>% 
+  filter(date >= 2000) %>% 
+  ggplot(aes(x = justiceName, y = direction)) +
+  geom_col() +
+  theme(axis.text.x = element_text(angle = 90))
 ```
 
