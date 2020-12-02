@@ -56,12 +56,108 @@ SCDB_2020_01_justiceCentered_Citation <-
 Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>% 
   select(sctCite, caseId, caseName, dateDecision, dateArgument, chief, issue, issueArea,
          decisionDirection, justiceName, vote, opinion, direction, majority) %>% 
-  mutate(date = str_sub(dateDecision, -4))
+  mutate(date = str_sub(dateDecision, -4)) %>% 
+
+  # Originally did == instead of %in%  
+  
+  mutate(president = case_when(justiceName %in% c("RHJackson", "WODouglas", "FFrankfurter",
+                                                "SFReed", "HLBlack", "WBRutledge",
+                                                "FMurphy") ~ "Roosevelt",
+                               justiceName %in% c("HHBurton", "FMVinson", "TCClark",
+                                                "SMinton") ~ "Truman",
+                               justiceName %in% c("EWarren", "JHarlan2", "WJBrennan",
+                                                "CEWhittaker", "PStewart") ~ "Eisenhower",
+                               justiceName %in% c("BRWhite", "AJGoldberg") ~ "Kennedy",
+                               justiceName %in% c("AFortas", "TMarshall") ~ "Johnson",
+                               justiceName %in% c("WEBurger", "HABlackmun", "LFPowell", 
+                                                "WHRehnquist") ~ "Nixon",
+                               justiceName %in% c("JPStevens") ~ "Ford",
+                               justiceName %in% c("SDOConnor", "AScalia", 
+                                                "AMKennedy") ~ "Reagan",
+                               justiceName %in% c("DHSouter", "CThomas") ~ "HW Bush",
+                               justiceName %in% c("RBGinsburg", "SGBreyer") ~ "Clinton",
+                               justiceName %in% c("JGRoberts", "SAAlito") ~ "Bush",
+                               justiceName %in% c("SSotomayor", "EKagan") ~ "Obama",
+                               justiceName %in% c("NMGorsuch", "BMKavanaugh") ~ "Trump")) %>%
+  group_by(justiceName) %>% 
+  mutate(direction_mean = mean(direction, na.rm = TRUE)) %>% 
+  mutate(chiefYES = case_when(chief == str_sub(justiceName, 3, -1) ~ "yes",
+                              chief == str_sub(justiceName, 2, -1) ~ "yes",
+                              TRUE ~ "no"))
+
+# Citation_Data %>% 
+#   filter(date >= 2000) %>% 
+#   ggplot(aes(x = justiceName, y = direction)) +
+#   geom_col() +
+#   theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+
+# How do I make this interactive so you can see the leaning of each justice depending on who you pick?
+Citation_Data %>% 
+  filter(justiceName == "RBGinsburg") %>% 
+  drop_na(direction) %>% 
+  ggplot(aes(x = direction)) +
+  geom_bar() +
+  labs(title = "Ideological Direction Count",
+       x = "Direction",
+       y = "Count") +
+  
+  # What am I doing wrong here? Confused as to why these labels won't show up
+  
+  scale_x_discrete(labels = c("Conservative", "Liberal"))
+```
+
+```{r}
+Citation_Data %>% 
+  ggplot(aes(x = fct_reorder(justiceName, direction_mean), y = direction_mean)) +
+  geom_point() +
+  labs(title = "Ideological Direction of Supreme Court Justices",
+       subtitle = "Average of Ideological Leanings in Cases from 1946-2020",
+       x = "Justices",
+       y = "Ideological Direction") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90))
+```
+
+```{r}
+
+# How do I make this an interactive graph you can toggle the president?
 
 Citation_Data %>% 
-  filter(date >= 2000) %>% 
-  ggplot(aes(x = justiceName, y = direction)) +
+  filter(president == "Clinton") %>% 
+  ggplot(aes(x = justiceName, y = direction_mean)) +
+  geom_point()
+```
+
+```{r}
+
+# How can I better look at trends between the way that justices voted and the issue type?
+
+Citation_Data %>% 
+  filter(justiceName == "NMGorsuch") %>% 
+  ggplot(aes(x = caseId, y = direction)) +
   geom_col() +
   theme(axis.text.x = element_text(angle = 90))
 ```
+
+Is the chief justice typically in the majority?
+```{r}
+Citation_Data %>%
+  group_by(justiceName) %>% 
+  mutate(n_maj = sum(majority == 2, na.rm = TRUE),
+         pct_maj = n_maj/sum(majority, na.rm = TRUE),
+         .groups = "drop") %>% 
+  ggplot(aes(x = justiceName, y = pct_maj, color = chiefYES)) +
+  geom_point() +
+  labs(title = "Are Chief Justices More Frequently in the Majority?",
+       x = "Justice",
+       y = "Percent of Time in Majority") +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_color_manual(labels = c("No", "Yes"),
+                     values = c("green", "blue"),
+                     name = "Chief Justice?")
+```
+
 
