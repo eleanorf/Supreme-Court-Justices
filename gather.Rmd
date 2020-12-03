@@ -87,17 +87,15 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                               chief == str_sub(justiceName, 2, -1) ~ "yes",
                               TRUE ~ "no"))
 
-# Citation_Data %>% 
-#   filter(date >= 2000) %>% 
-#   ggplot(aes(x = justiceName, y = direction)) +
-#   geom_col() +
-#   theme(axis.text.x = element_text(angle = 90))
+setwd("~/Desktop/projects/gov50-final-project/final-app")
+write.csv(Citation_Data, "final-app/Citation_Data.csv")
+
 ```
 
 ```{r}
 
 # How do I make this interactive so you can see the leaning of each justice depending on who you pick?
-each_justice <- Citation_Data %>% 
+Citation_Data %>% 
   filter(justiceName == "RBGinsburg") %>% 
   drop_na(direction) %>% 
   ggplot(aes(x = direction)) +
@@ -112,7 +110,7 @@ each_justice <- Citation_Data %>%
 ```
 
 ```{r}
-direction_all <- Citation_Data %>% 
+Citation_Data %>% 
   ggplot(aes(x = fct_reorder(justiceName, direction_mean), y = direction_mean)) +
   geom_point() +
   labs(title = "Ideological Direction of Supreme Court Justices",
@@ -137,10 +135,11 @@ each_president <- Citation_Data %>%
 
 # How can I better look at trends between the way that justices voted and the issue type?
 
-direction_issue_justice <- Citation_Data %>% 
+Citation_Data %>% 
   filter(justiceName == "NMGorsuch") %>% 
   ggplot(aes(x = caseId, y = direction)) +
   geom_col() +
+  facet_wrap( ~issueArea) +
   theme(axis.text.x = element_text(angle = 90))
 ```
 
@@ -161,6 +160,25 @@ chief_in_maj <- Citation_Data %>%
                      values = c("green", "blue"),
                      name = "Chief Justice?")
 ```
+
+Frequency in majority over time?
+```{r}
+# Can I put two graphs next to each other that will allow me to compare two different justices?
+
+Citation_Data %>% 
+  group_by(justiceName, date) %>% 
+  mutate(n_maj_year = sum(majority == 2, na.rm = TRUE)) %>% 
+  mutate(pct_maj_year = n_maj_year/sum(majority %in% c(1, 2), na.rm = TRUE)) %>% 
+  filter(justiceName %in% c("CThomas", "RBGinsburg")) %>% 
+  distinct(date, .keep_all = TRUE) %>% 
+  ggplot(aes(x = date, y = pct_maj_year, fill = justiceName)) +
+  geom_col(position = position_dodge()) +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  scale_y_continuous(labels = scales::percent_format())
+```
+
+
 
 A look at the judge's distribution by issue
 ```{r}
@@ -220,6 +238,21 @@ of criminal laws: war crimes
 of criminal laws: sentencing guidelines of criminal laws: miscellaneous", "jury trial (right to, as distinct from extra-legal jury influences)", "speedy trial", "miscellaneous criminal procedure (cf. due process, prisoners' rights, comity:criminal procedure)"))
 ```
 
+```{r}
+
+# ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
+#             plot_geom()
+
+
+model_data <- Citation_Data %>% 
+  mutate(outcome = case_when(direction == 1 ~ 1,
+                             direction == 2 ~ 0))
+
+model <- glm(outcome ~ chief + justiceName + date,
+             data = model_data,
+             family = "binomial")
+summary(model)
+```
 
 
 

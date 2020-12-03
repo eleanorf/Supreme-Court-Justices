@@ -14,7 +14,8 @@ library(ggplot2)
 library(ggforce)
 library(readr)
 
-d <- read_csv("SCDB_2020_01_justiceCentered_Citation.csv")
+d <- read_csv("Citation_Data.csv")
+
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -27,14 +28,13 @@ ui <- navbarPage(
              a("Google", href = "https://google.com")),
     tabPanel("Model",
              titlePanel("Model"),
-             p("Here is my graphic for Milestone #6. I am still working on data 
-               scraping to find the data that I will use for my final project,
-               but I am using this data for now for the purpose of milestones."),
+             p("Here is a graph of..."),
              fluidPage(
-                 selectInput("x", "X variable", choices = names(d)),
-                 selectInput("y", "Y variable", choices = names(d)),
+                 selectInput("filter", "Choose a Justice", choices = names(d$justiceName)),
+                 selectInput("x", "X variable", choices = names(Citation_Data)),
+                 selectInput("y", "Y variable", choices = names(Citation_Data)),
                  selectInput("geom", "geom", c("point", "column", "jitter", "line")),
-                 plotOutput("plot")
+                 plotOutput("justice_direction")
              )
     ),
     tabPanel("Discussion",
@@ -68,9 +68,10 @@ server <- function(input, output, session) {
         )
     })
     
-    output$plot <- renderPlot({
-        ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
-            plot_geom()
+    output$justice_direction <- renderPlot({
+        filter(justiceName == .data[[input$filter]]) %>% 
+        ggplot(d, aes(x = direction)) +
+            geom_bar()
     }, res = 96)
 }
 
