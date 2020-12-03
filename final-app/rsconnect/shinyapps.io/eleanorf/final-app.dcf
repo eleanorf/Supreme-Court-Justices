@@ -1,0 +1,12 @@
+name: final-app
+title: final-app
+username:
+account: eleanorf
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 3342755
+bundleId: 3936345
+url: https://eleanorf.shinyapps.io/final-app/
+when: 1606968051.82553
+asMultiple: FALSE
+asStatic: FALSE

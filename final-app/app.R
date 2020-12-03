@@ -22,10 +22,15 @@ ui <- navbarPage(
                              choices = d$justiceName,
                              selected = "RBGinsburg"),
                  plotOutput("justice_direction")
-             ),
+             )),
     tabPanel("Model",
              titlePanel("Model"),
-             p("Here is a graph of...")
+             p("This is where I will put my model. I am going to use stan_glm to 
+               predict how a justice might vote depending on different variables.
+               I have already created a model in my gather.Rmd, but I only used
+               glm instead of stan_glm because I am having computer troubles. 
+               My dataset is so large that it takes a while for my computer to 
+               run each function.")
     ),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
@@ -34,17 +39,31 @@ ui <- navbarPage(
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
-             p("Hello! I am planning on doing my final project using data 
-             scraped from the internet that tests the sentiments of transcripts 
-             regarding Supreme Court nominees. I am planning on comparing 
-             different nominees and different news sources."),
+             p("I have always been fascinated by the Supreme Court and curious 
+               to learn more about each justice’s voting patterns. This fall, 
+               Justice Ruth Bader Ginsburg passed away and President Trump 
+               nominated Amy Coney Barret who was quickly confirmed by the 
+               senate. It felt as though the entire world was abuzz with 
+               questions, asking what this change in the Court would mean for 
+               the US. Personally, I wanted to know how much the ideological 
+               makeup of the court really mattered. Supreme Court Justices 
+               claim to be above politics, and one would hope that their life 
+               terms remove them from the political pressures of reelection. 
+               In this project, I look at the ideological direction of each 
+               justice’s votes from multiple angles. Then, I create a model 
+               that attempts to predict how a justice might vote given different 
+               explanatory variables.
+               In order to answer these questions, I look at data regarding 
+               Supreme Court justices from 1946 to 2020. The data I used came 
+               from", a("Washington University Law’s Supreme Court Database.",
+                        href = "http://supremecourtdatabase.org/documentation.php")
+             ),
              h3("About Me"),
-             h4("Hello!"),
              p("My name is Eleanor Fitzgibbons and I study Government. You can 
              reach me at efitzgibbons@college.harvard.edu. This is a link to 
                my", a("repo.", 
                       href = "https://github.com/eleanorf/final-project")))
-))
+)
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
