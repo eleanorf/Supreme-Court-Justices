@@ -102,7 +102,7 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                                     issueArea == 14 ~ "Private Action"))
 
 setwd("~/Desktop/projects/gov50-final-project/final-app")
-write.csv(Citation_Data, "final-app/Citation_Data.csv")
+write.csv(Citation_Data, "Citation_Data.csv")
 
 ```
 

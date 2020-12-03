@@ -13,30 +13,49 @@ d <- read_csv("Citation_Data.csv")
 ui <- navbarPage(
     "Final Project",
     tabPanel("Home", 
-             titlePanel("Home"),
-             h3("Welcome to My Final Project"),
-             h3("About Me"),
-             fluidPage(
-                 plotOutput("alljustices_plot")
-             ),
-             p("Here is a graph that counts how frequently each justice cast a 
-                liberal or conservative vote as a Supreme Court Justice."),
-             fluidPage(
-                 selectInput("filter_justice", "Choose a Justice", 
-                             choices = d$justiceName,
-                             selected = "RBGinsburg"),
-                 plotOutput("justice_direction")
-             ),
-             p("I was curious to see the voting patterns of justices taking into
-               account the President who appointed them to their offce. Pick a 
-               President below to see the voting patterns of the justices whom 
-               they appointed!"),
-             fluidPage(
-                 selectInput("filter_president", "Choose a President", 
-                             choices = d$president,
-                             selected = "Clinton"),
-                 plotOutput("president_direction")
-             )
+             tabsetPanel(
+                         tabPanel("Introduction",
+                                  titlePanel("Introduction"),
+                                  h3("Welcome to My Final Project!"),
+                                  p("In this project, I look at data regarding 
+                                    Supreme Court Justices from 1946-2020. In
+                                    this first graph, I have shown the average
+                                    ideological leanings of each justice during
+                                    this time period. A direction equal to 1 
+                                    represents a conservative vote, and a 
+                                    direction equal to 2 represents a liberal 
+                                    vote."),
+                                  fluidPage(
+                                      plotOutput("alljustices_plot")),
+                         ),
+                         tabPanel("Individual Justices",
+                                  titlePanel("Ideological Leanings of Each 
+                                             Justice"),
+                                  p("In this graph, I count how frequently 
+                                  each justice cast a liberal or conservative 
+                                    vote as a Supreme Court Justice."),
+                                  fluidPage(
+                                      selectInput("filter_justice", "Choose a Justice", 
+                                                  choices = d$justiceName,
+                                                  selected = "RBGinsburg"),
+                                      plotOutput("justice_direction"))
+                         ),
+                         tabPanel("By President",
+                                  titlePanel("Ideological Leanings of Each Justice,
+                                             Grouped by President"),
+                                  p("I was curious to see the voting patterns of 
+                                  justices taking into account the President 
+                                  who appointed them to their office. Pick a 
+                                  President below to see the voting patterns of 
+                                    the justices whom they appointed!"),
+                                  fluidPage(
+                                      selectInput("filter_president", 
+                                                  "Choose a President", 
+                                                  choices = d$president,
+                                                  selected = "Clinton"),
+                                      plotOutput("president_direction"))
+                         )
+                         )
              ),
     tabPanel("Model",
              titlePanel("Model"),
@@ -108,9 +127,21 @@ server <- function(input, output, session) {
                  y = "Ideological Direction") +
             ylim(c(1, 2))
     }, res = 96)
+    output$alljustices_plot <- renderPlot({
+        d %>% 
+            ggplot(aes(x = fct_reorder(justiceName, direction_mean), 
+                       y = direction_mean)) +
+            geom_point(color = "lightblue") +
+            labs(title = "Ideological Direction of Supreme Court Justices",
+                 subtitle = "Average of Ideological Leanings in Cases from 1946-2020",
+                 x = "Justices",
+                 y = "Ideological Direction") +
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 90))
+    }, res = 96)
     }
 
 
 # Run the application 
-shinyApp(ui = fluidPage(theme = shinytheme("superhero")), 
+shinyApp(ui = ui, 
          server = server)
