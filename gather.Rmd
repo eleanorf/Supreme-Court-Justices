@@ -100,13 +100,12 @@ Citation_Data %>%
   drop_na(direction) %>% 
   ggplot(aes(x = direction)) +
   geom_bar() +
+  theme_bw() +
   labs(title = "Ideological Direction Count",
        x = "Direction",
        y = "Count") +
-  
-  # What am I doing wrong here? Confused as to why these labels won't show up
-  
-  scale_x_discrete(labels = c("Conservative", "Liberal"))
+  scale_x_continuous(breaks = c(1, 2),
+                     label = c("Conservative", "Liberal"))
 ```
 
 ```{r}
@@ -145,7 +144,7 @@ Citation_Data %>%
 
 Is the chief justice typically in the majority?
 ```{r}
-chief_in_maj <- Citation_Data %>%
+Citation_Data %>%
   group_by(justiceName) %>% 
   mutate(n_maj = sum(majority == 2, na.rm = TRUE),
          pct_maj = n_maj/sum(majority, na.rm = TRUE),
