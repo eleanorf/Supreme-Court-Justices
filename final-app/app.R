@@ -4,6 +4,7 @@ library(dplyr, warn.conflicts = FALSE)
 library(ggplot2)
 library(ggforce)
 library(readr)
+library(shinythemes)
 
 d <- read_csv("Citation_Data.csv")
 
@@ -15,14 +16,28 @@ ui <- navbarPage(
              titlePanel("Home"),
              h3("Welcome to My Final Project"),
              h3("About Me"),
-             h4("Here is a graph that counts how frequently each justice cast a 
+             fluidPage(
+                 plotOutput("alljustices_plot")
+             ),
+             p("Here is a graph that counts how frequently each justice cast a 
                 liberal or conservative vote as a Supreme Court Justice."),
              fluidPage(
-                 selectInput("filter", "Choose a Justice", 
+                 selectInput("filter_justice", "Choose a Justice", 
                              choices = d$justiceName,
                              selected = "RBGinsburg"),
                  plotOutput("justice_direction")
-             )),
+             ),
+             p("I was curious to see the voting patterns of justices taking into
+               account the President who appointed them to their offce. Pick a 
+               President below to see the voting patterns of the justices whom 
+               they appointed!"),
+             fluidPage(
+                 selectInput("filter_president", "Choose a President", 
+                             choices = d$president,
+                             selected = "Clinton"),
+                 plotOutput("president_direction")
+             )
+             ),
     tabPanel("Model",
              titlePanel("Model"),
              p("This is where I will put my model. I am going to use stan_glm to 
@@ -62,14 +77,14 @@ ui <- navbarPage(
              p("My name is Eleanor Fitzgibbons and I study Government. You can 
              reach me at efitzgibbons@college.harvard.edu. This is a link to 
                my", a("repo.", 
-                      href = "https://github.com/eleanorf/final-project")))
+                      href = "https://github.com/eleanorf/gov50-final-project")))
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     output$justice_direction <- renderPlot({
         d %>% 
-            filter(justiceName == input$filter) %>% 
+            filter(justiceName == input$filter_justice) %>% 
             drop_na(direction) %>% 
             ggplot(aes(x = direction)) +
             geom_bar() +
@@ -80,8 +95,22 @@ server <- function(input, output, session) {
             scale_x_continuous(breaks = c(1, 2),
                                label = c("Conservative", "Liberal"))
     }, res = 96)
+    output$president_direction <- renderPlot({
+        d %>% 
+            filter(president == input$filter_president) %>% 
+            drop_na(direction) %>% 
+            ggplot(aes(x = justiceName, y = direction_mean)) +
+            geom_point() +
+            theme_bw() +
+            labs(title = "Average Ideological Direction",
+                 subtitle = "Of the Justices Appointed by the Selected President",
+                 x = "Justice",
+                 y = "Ideological Direction") +
+            ylim(c(1, 2))
+    }, res = 96)
     }
 
 
 # Run the application 
-shinyApp(ui = ui, server = server)
+shinyApp(ui = fluidPage(theme = shinytheme("superhero")), 
+         server = server)

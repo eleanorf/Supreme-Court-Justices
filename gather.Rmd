@@ -85,7 +85,21 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
   ungroup() %>% 
   mutate(chiefYES = case_when(chief == str_sub(justiceName, 3, -1) ~ "yes",
                               chief == str_sub(justiceName, 2, -1) ~ "yes",
-                              TRUE ~ "no"))
+                              TRUE ~ "no")) %>% 
+  mutate(issueArea_name = case_when(issueArea == 1 ~ "Criminal Procedure",
+                                    issueArea == 2 ~ "Civil Rights",
+                                    issueArea == 3 ~ "First Amendment",
+                                    issueArea == 4 ~ "Due Process",
+                                    issueArea == 5 ~ "Privacy",
+                                    issueArea == 6 ~ "Attorneys",
+                                    issueArea == 7 ~ "Unions",
+                                    issueArea == 8 ~ "Economic Activity",
+                                    issueArea == 9 ~ "Judicial Power",
+                                    issueArea == 10 ~ "Federalism",
+                                    issueArea == 11 ~ "Interstate Relations",
+                                    issueArea == 12 ~ "Federal Taxation",
+                                    issueArea == 13 ~ "Miscellaneous",
+                                    issueArea == 14 ~ "Private Action"))
 
 setwd("~/Desktop/projects/gov50-final-project/final-app")
 write.csv(Citation_Data, "final-app/Citation_Data.csv")
@@ -110,8 +124,9 @@ Citation_Data %>%
 
 ```{r}
 Citation_Data %>% 
-  ggplot(aes(x = fct_reorder(justiceName, direction_mean), y = direction_mean)) +
-  geom_point() +
+  ggplot(aes(x = fct_reorder(justiceName, direction_mean), 
+             y = direction_mean)) +
+  geom_point(color = "lightblue") +
   labs(title = "Ideological Direction of Supreme Court Justices",
        subtitle = "Average of Ideological Leanings in Cases from 1946-2020",
        x = "Justices",
@@ -124,10 +139,11 @@ Citation_Data %>%
 
 # How do I make this an interactive graph you can toggle the president?
 
-each_president <- Citation_Data %>% 
+Citation_Data %>% 
   filter(president == "Clinton") %>% 
   ggplot(aes(x = justiceName, y = direction_mean)) +
-  geom_point()
+  geom_point() +
+  ylim(c(1, 2))
 ```
 
 ```{r}
@@ -135,11 +151,23 @@ each_president <- Citation_Data %>%
 # How can I better look at trends between the way that justices voted and the issue type?
 
 Citation_Data %>% 
-  filter(justiceName == "NMGorsuch") %>% 
-  ggplot(aes(x = caseId, y = direction)) +
-  geom_col() +
-  facet_wrap( ~issueArea) +
-  theme(axis.text.x = element_text(angle = 90))
+  filter(justiceName == "RBGinsburg") %>% 
+  drop_na(direction) %>% 
+  distinct(sctCite, .keep_all = TRUE) %>% 
+  filter(issueArea_name %in% c("Civil Rights", "Economic Activity")) %>% 
+  ggplot(aes(x = sctCite, y = direction)) +
+  geom_jitter(height = 0.05, alpha = 0.75) +
+  facet_wrap( ~issueArea_name, ncol = 4) +
+  labs(title = "Ideological Direction by Issue",
+       x = "",
+       y = "Ideological Direction") +
+  theme_bw() +
+  theme(plot.title = element_text(hjust = 0.5),
+        axis.text.x = element_blank(),
+        axis.ticks.x = element_blank(),
+        axis.text.y = element_text(angle = 90, hjust = 0.5)) +
+  scale_y_continuous(breaks = c(1, 2),
+                     labels = c("Conservative", "Liberal"))
 ```
 
 Is the chief justice typically in the majority?
