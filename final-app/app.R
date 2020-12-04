@@ -16,7 +16,6 @@ ui <- navbarPage(
     tabPanel("Home", 
              tabsetPanel(
                          tabPanel("Introduction",
-                                  titlePanel("Introduction"),
                                   h3("Welcome to My Final Project!"),
                                   p("In this project, I look at data regarding 
                                     Supreme Court Justices from 1946-2020. In
