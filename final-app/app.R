@@ -37,11 +37,11 @@ ui <- navbarPage(
                                     vote as a Supreme Court Justice."),
                                   fluidPage(
                                       selectInput("filter_justice", "Choose a Justice", 
-                                                  choices = d$justiceName,
-                                                  selected = "RBGinsburg"),
+                                                  choices = d$justice_fullnames,
+                                                  selected = "Ruth Bader Ginsburg"),
                                       plotOutput("justice_direction"))
                          ),
-                         tabPanel("By President",
+                         tabPanel("Presidents",
                                   titlePanel("Ideological Leanings of Each Justice,
                                              Grouped by President"),
                                   p("I was curious to see the voting patterns of 
@@ -56,7 +56,7 @@ ui <- navbarPage(
                                                   selected = "Clinton"),
                                       plotOutput("president_direction"))
                          ),
-                         tabPanel("By Issue",
+                         tabPanel("Issue Areas",
                                   titlePanel("Ideological Leaning of Each Justice
                                              By Issue"),
                                   p("The next pattern I look at is the ways in which
@@ -65,8 +65,8 @@ ui <- navbarPage(
                                   fluidPage(
                                       selectInput("filter_justice_issue",
                                                   "Choose a Justice",
-                                                  choices = d$justiceName,
-                                                  selected = "RBGinsburg"),
+                                                  choices = d$justice_fullnames,
+                                                  selected = "Ruth Bader Ginsburg"),
                                       selectInput("filter_issue_1",
                                                   "Choose an Issue Area",
                                                   choices = d$issueArea_name,
@@ -77,7 +77,16 @@ ui <- navbarPage(
                                                   selected = "Economic Activity"),
                                       plotOutput("issue_area_comp")
                                   )
-                         )
+                         ),
+                         tabPanel("Chief Justices",
+                                  titlePanel("Is the Chief Justice Typically in
+                                             the Majority?"),
+                                  p("In this graph, I look at the frequency with
+                                    which each justice is in the majory, 
+                                    highlighting the chief justices."),
+                                  fluidPage(
+                                      plotOutput("chief_majority_plot"))
+                                  )
              )),
     tabPanel("Model",
              titlePanel("Model"),
@@ -115,17 +124,17 @@ ui <- navbarPage(
                         href = "http://supremecourtdatabase.org/documentation.php")
              ),
              h3("About Me"),
-             p("My name is Eleanor Fitzgibbons and I study Government. You can 
-             reach me at efitzgibbons@college.harvard.edu. This is a link to 
-               my", a("repo.", 
-                      href = "https://github.com/eleanorf/gov50-final-project")))
+             p("My name is Eleanor Fitzgibbons and I study Government at Harvard. 
+             You can reach me at efitzgibbons@college.harvard.edu. This is a 
+             link to my", a("Github repository.", 
+                            href = "https://github.com/eleanorf/gov50-final-project")))
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output, session) {
     output$justice_direction <- renderPlot({
         d %>% 
-            filter(justiceName == input$filter_justice) %>% 
+            filter(justice_fullnames == input$filter_justice) %>% 
             drop_na(direction) %>% 
             ggplot(aes(x = direction)) +
             geom_bar(fill = "lightblue") +
@@ -140,7 +149,7 @@ server <- function(input, output, session) {
         d %>% 
             filter(president == input$filter_president) %>% 
             drop_na(direction) %>% 
-            ggplot(aes(x = justiceName, y = direction_mean)) +
+            ggplot(aes(x = justice_fullnames, y = direction_mean)) +
             geom_point(color = "navyblue") +
             theme_bw() +
             labs(title = "Average Ideological Direction",
@@ -151,7 +160,10 @@ server <- function(input, output, session) {
     }, res = 96)
     output$alljustices_plot <- renderPlot({
         d %>% 
-            ggplot(aes(x = fct_reorder(justiceName, direction_mean), 
+            
+            # How do I make it so that the x axis labels aren't centered?
+            
+            ggplot(aes(x = fct_reorder(justice_fullnames, direction_mean), 
                        y = direction_mean)) +
             geom_point(color = "lightblue") +
             labs(title = "Ideological Direction of Supreme Court Justices",
@@ -163,7 +175,7 @@ server <- function(input, output, session) {
     }, res = 96)
     output$issue_area_comp <- renderPlot({
         d %>% 
-            filter(justiceName == input$filter_justice_issue) %>% 
+            filter(justice_fullnames == input$filter_justice_issue) %>% 
             drop_na(direction) %>% 
             distinct(sctCite, .keep_all = TRUE) %>% 
             filter(issueArea_name %in% c(input$filter_issue_1,
@@ -171,6 +183,10 @@ server <- function(input, output, session) {
             ggplot(aes(x = sctCite, y = direction)) +
             geom_jitter(height = 0.05, alpha = 0.75,
                         color = "navyblue") +
+            
+            # I am getting a warning that says "Faceting variables must have at
+            # least one value, but I selected variables using selected=...
+            
             facet_wrap( ~issueArea_name, ncol = 4) +
             labs(title = "Ideological Direction by Issue",
                  x = "",
@@ -182,7 +198,23 @@ server <- function(input, output, session) {
                   axis.text.y = element_text(angle = 90, hjust = 0.5)) +
             scale_y_continuous(breaks = c(1, 2),
                                labels = c("Conservative", "Liberal"))
-    })
+    }, res = 96)
+    output$chief_majority_plot <- renderPlot({
+        d %>% 
+            group_by(justice_fullnames) %>% 
+            mutate(n_maj = sum(majority == 2, na.rm = TRUE),
+                   pct_maj = n_maj/sum(majority, na.rm = TRUE),
+                   .groups = "drop") %>% 
+            ggplot(aes(x = justice_fullnames, y = pct_maj, color = chiefYES)) +
+            geom_point() +
+            labs(title = "Are Chief Justices More Frequently in the Majority?",
+                 x = "Justice",
+                 y = "Percent of Time in Majority") +
+            theme(axis.text.x = element_text(angle = 90)) +
+            scale_color_manual(labels = c("No", "Yes"),
+                               values = c("green", "blue"),
+                               name = "Chief Justice?")
+    }, res = 96)
     }
 
 

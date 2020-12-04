@@ -35,6 +35,39 @@ SCDB_2020_01_justiceCentered_Docket <-
 
 ```{r}
 Citation_Data %>% 
-  distinct(justiceName)
+  distinct(justice_fullnames)
 ```
+```{r}
+IssueArea <- tibble(Number = c(1:14),
+                    Issue = c("Criminal Procedure", "Civil Rights", 
+                              "First Amendment", "Due Process",  "Privacy", 
+                              "Attorneys", "Unions", "Economic Activity", 
+                              "Judicial Power", "Federalism", 
+                              "Interstate Relations", "Federal Taxation", 
+                              "Miscellaneous", "Private Action"))
+gt_IssueArea <- gt(data = IssueArea) %>% 
+  tab_header(title = "Issue Area Code")
+
+# Link to online code book for SCDB: http://supremecourtdatabase.org/documentation.php
+```
+
+
+```{r}
+# ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
+#             plot_geom()
+
+
+model_data <- Citation_Data %>% 
+  mutate(outcome = case_when(direction == 1 ~ 1,
+                             direction == 2 ~ 0))
+
+model <- glm(outcome ~ chief + justiceName + date,
+             data = model_data,
+             family = "binomial")
+summary(model)
+```
+
+
+
+
 

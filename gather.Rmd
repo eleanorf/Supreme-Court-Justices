@@ -80,30 +80,43 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                                     issueArea == 13 ~ "Miscellaneous",
                                     issueArea == 14 ~ "Private Action")) %>% 
   mutate(justice_fullnames = case_when(justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "RHJackson" ~ "Harold Hitz Burton",
-                                       justiceName == "WODouglas" ~ "Harold Hitz Burton",
-                                       justiceName == "FFrankfurter" ~ "Harold Hitz Burton",
-                                       justiceName == "SFReed" ~ "Harold Hitz Burton",
-                                       justiceName == "HLBlack" ~ "Harold Hitz Burton",
-                                       justiceName == "WBRutledge" ~ "Harold Hitz Burton",
-                                       justiceName == "FMurphy" ~ "Harold Hitz Burton",
-                                       justiceName == "FMVinson" ~ "Harold Hitz Burton",
-                                       justiceName == "TCClark" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
-                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",))
+                                       justiceName == "RHJackson" ~ "Robert H. Jackson",
+                                       justiceName == "WODouglas" ~ "William O. Douglas",
+                                       justiceName == "FFrankfurter" ~ "Felix Frankfurter",
+                                       justiceName == "SFReed" ~ "Stanley Forman Reed",
+                                       justiceName == "HLBlack" ~ "Hugo Black",
+                                       justiceName == "WBRutledge" ~ "Wiley Blount Rutledge",
+                                       justiceName == "FMurphy" ~ "Frank Murphy",
+                                       justiceName == "FMVinson" ~ "Fred M. Vinson",
+                                       justiceName == "TCClark" ~ "Tom C. Clark",
+                                       justiceName == "SMinton" ~ "Sherman Minton",
+                                       justiceName == "EWarren" ~ "Earl Warren",
+                                       justiceName == "JHarlan2" ~ "John Marshall Harlan II",
+                                       justiceName == "WJBrennan" ~ "William J. Brennan Jr.",
+                                       justiceName == "CEWhittaker" ~ "Charles Evans Whittaker",
+                                       justiceName == "PStewart" ~ "Potter Stewart",
+                                       justiceName == "BRWhite" ~ "Byron White",
+                                       justiceName == "AJGoldberg" ~ "Arthur Goldberg",
+                                       justiceName == "AFortas" ~ "Abe Fortas",
+                                       justiceName == "TMarshall" ~ "Thurgood Marshall",
+                                       justiceName == "WEBurger" ~ "Warren E. Burger",
+                                       justiceName == "HABlackmun" ~ "Harry Blackmun",
+                                       justiceName == "LFPowell" ~ "Lewis F. Powell Jr.",
+                                       justiceName == "WHRehnquist" ~ "William Rehnquist",
+                                       justiceName == "JPStevens" ~ "John Paul Stevens",
+                                       justiceName == "SDOConnor" ~ "Sandra Day O'Connor",
+                                       justiceName == "AScalia" ~ "Antonin Scalia",
+                                       justiceName == "AMKennedy" ~ "Anthony Kennedy",
+                                       justiceName == "DHSouter" ~ "David Souter",
+                                       justiceName == "CThomas" ~ "Clarence Thomas",
+                                       justiceName == "RBGinsburg" ~ "Ruth Bader Ginsburg",
+                                       justiceName == "SGBreyer" ~ "Stephen Breyer",
+                                       justiceName == "JGRoberts" ~ "John Roberts",
+                                       justiceName == "SAAlito" ~ "Samuel Alito",
+                                       justiceName == "SSotomayor" ~ "Sonia Sotomayor",
+                                       justiceName == "EKagan" ~ "Elena Kagan",
+                                       justiceName == "NMGorsuch" ~ "Neil Gorsuch",
+                                       justiceName == "BMKavanaugh" ~ "Brett Kavanaugh"))
 
 setwd("~/Desktop/projects/gov50-final-project/final-app")
 write.csv(Citation_Data, "Citation_Data.csv")
@@ -232,59 +245,11 @@ direction_by_issue <- Citation_Data %>%
   theme(axis.text.x = element_text(angle = 90))
 ```
 
-```{r}
-IssueArea <- tibble(Number = c(1:14),
-                    Issue = c("Criminal Procedure", "Civil Rights", 
-                              "First Amendment", "Due Process",  "Privacy", 
-                              "Attorneys", "Unions", "Economic Activity", 
-                              "Judicial Power", "Federalism", 
-                              "Interstate Relations", "Federal Taxation", 
-                              "Miscellaneous", "Private Action"))
-gt_IssueArea <- gt(data = IssueArea) %>% 
-  tab_header(title = "Issue Area Code")
-
-# Link to online code book for SCDB: http://supremecourtdatabase.org/documentation.php
-```
-
-
-What are the specific issues inside of each issue area?
-```{r}
-Citation_Data %>% 
-  select(issue, issueArea) %>% 
-  filter(issueArea == 1) %>% 
-  distinct(issue) %>% 
-  arrange(issue) %>% 
-  mutate(issue_name = c("involuntary confession", "habeas corpus", "plea bargaining: the constitutionality of and/or the circumstances of its exercise", "retroactivity (of newly announced or newly enacted constitutional or statutory rights)", "search and seizure (other than as pertains to vehicles or Crime Control Act)", "search and seizure, vehicles", "search and seizure, Crime Control Act", "contempt of court or congress", "self-incrimination (other than as pertains to Miranda or immunity from prosecution)", "Miranda warnings", "self-incrimination, immunity from prosecution", "right to counsel (cf. indigents appointment of counsel or inadequate representation)", "cruel and unusual punishment, death penalty (cf. extra legal jury influence, death penalty)", "cruel and unusual punishment, non-death penalty (cf. liability, civil rights acts)", "line-up", "discovery and inspection (in the context of criminal litigation only, otherwise Freedom of Information Act and related federal or state statutes or regulations)", "double jeopardy", "ex post facto (state)", "extra-legal jury influences: miscellaneous", "extra-legal jury influences: prejudicial statements or evidence", "extra-legal jury influences: contact with jurors outside courtroom", "extra-legal jury influences: jury instructions (not necessarily in criminal cases)", "extra-legal jury influences: voir dire (not necessarily a criminal case)", "extra-legal jury influences: prison garb or appearance", "extra-legal jury influences: jurors and death penalty (cf. cruel and unusual punishment)", "extra-legal jury influences: pretrial publicity", "confrontation (right to confront accuser, call and cross-examine witnesses)", "subconstitutional fair procedure: confession of error", "subconstitutional fair procedure: conspiracy (cf. Federal Rules of Criminal Procedure: conspiracy)", "subconstitutional fair procedure: entrapment", "subconstitutional fair procedure: exhaustion of remedies", "subconstitutional fair procedure: fugitive from justice", "subconstitutional fair procedure: presentation, admissibility, or sufficiency of evidence (not necessarily a criminal case)", "subconstitutional fair procedure: stay of execution", "subconstitutional fair procedure: timeliness", "subconstitutional fair procedure: miscellaneous", "Federal Rules of Criminal Procedure", "statutory construction of criminal laws: assault", "statutory construction of criminal laws: bank robbery", "statutory construction of criminal laws: conspiracy (cf. subconstitutional fair procedure: conspiracy)", "statutory construction of criminal laws: escape from custody", "statutory construction of criminal laws: false statements (cf. statutory construction of criminal laws: perjury)", "statutory construction internal revenue)", "statutory construction", "statutory construction", "statutory construction", "statutory construction", "statutory construction naturalization)", "statutory construction", "statutory construction", "statutory construction prohibition of alcohol", "statutory construction", "statutory construction statutory construction","statutory construction", "statutory construction", "statutory construction", "statutory construction
-of criminal laws: financial (other than in fraud or
-of criminal laws: firearms
-of criminal laws: fraud
-of criminal laws: gambling
-of criminal laws: Hobbs Act; i.e., 18 USC 1951
-of criminal laws: immigration (cf. immigration and
-of criminal laws: internal revenue (cf. Federal Taxation) of criminal laws: Mann Act and related statutes
-of criminal laws: narcotics includes regulation and
-of criminal laws: obstruction of justice
-of criminal laws: perjury (other than as pertains to of criminal laws: false statements)
-of criminal laws: Travel Act, 18 USC 1952
-of criminal laws: war crimes
-of criminal laws: sentencing guidelines of criminal laws: miscellaneous", "jury trial (right to, as distinct from extra-legal jury influences)", "speedy trial", "miscellaneous criminal procedure (cf. due process, prisoners' rights, comity:criminal procedure)"))
-```
 
 ```{r}
 
-# ggplot(d, aes(.data[[input$x]], .data[[input$y]])) +
-#             plot_geom()
-
-
-model_data <- Citation_Data %>% 
-  mutate(outcome = case_when(direction == 1 ~ 1,
-                             direction == 2 ~ 0))
-
-model <- glm(outcome ~ chief + justiceName + date,
-             data = model_data,
-             family = "binomial")
-summary(model)
 ```
+
 
 
 
