@@ -1,0 +1,40 @@
+---
+title: "Test"
+author: "Eleanor Fitzgibbons"
+date: "12/3/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(readr)
+library(gt)
+```
+
+```{r}
+SCDB_2020_01_justiceCentered_Docket <- 
+  read_csv("final-app/SCDB_2020_01_justiceCentered_Docket.csv",
+           col_types = cols(.default = col_double(),
+                            caseId = col_character(),
+                            docketId = col_character(),
+                            caseIssuesId = col_character(),
+                            voteId = col_character(),
+                            dateDecision = col_character(),
+                            usCite = col_character(),
+                            sctCite = col_character(),
+                            ledCite = col_character(),
+                            lexisCite = col_character(),
+                            chief = col_character(),
+                            caseName = col_character(),
+                            dateArgument = col_character(),
+                            dateRearg = col_character(),
+                            lawMinor = col_character(),
+                            justiceName = col_character()))
+```
+
+```{r}
+Citation_Data %>% 
+  distinct(justiceName)
+```
+

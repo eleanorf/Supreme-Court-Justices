@@ -14,27 +14,6 @@ library(gt)
 
 
 ```{r}
-SCDB_2020_01_justiceCentered_Docket <- 
-  read_csv("final-app/SCDB_2020_01_justiceCentered_Docket.csv",
-           col_types = cols(.default = col_double(),
-                            caseId = col_character(),
-                            docketId = col_character(),
-                            caseIssuesId = col_character(),
-                            voteId = col_character(),
-                            dateDecision = col_character(),
-                            usCite = col_character(),
-                            sctCite = col_character(),
-                            ledCite = col_character(),
-                            lexisCite = col_character(),
-                            chief = col_character(),
-                            caseName = col_character(),
-                            dateArgument = col_character(),
-                            dateRearg = col_character(),
-                            lawMinor = col_character(),
-                            justiceName = col_character()))
-```
-
-```{r}
 SCDB_2020_01_justiceCentered_Citation <- 
   read_csv("final-app/SCDB_2020_01_justiceCentered_Citation.csv",
            col_types = cols(.default = col_double(),
@@ -99,7 +78,32 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                                     issueArea == 11 ~ "Interstate Relations",
                                     issueArea == 12 ~ "Federal Taxation",
                                     issueArea == 13 ~ "Miscellaneous",
-                                    issueArea == 14 ~ "Private Action"))
+                                    issueArea == 14 ~ "Private Action")) %>% 
+  mutate(justice_fullnames = case_when(justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "RHJackson" ~ "Harold Hitz Burton",
+                                       justiceName == "WODouglas" ~ "Harold Hitz Burton",
+                                       justiceName == "FFrankfurter" ~ "Harold Hitz Burton",
+                                       justiceName == "SFReed" ~ "Harold Hitz Burton",
+                                       justiceName == "HLBlack" ~ "Harold Hitz Burton",
+                                       justiceName == "WBRutledge" ~ "Harold Hitz Burton",
+                                       justiceName == "FMurphy" ~ "Harold Hitz Burton",
+                                       justiceName == "FMVinson" ~ "Harold Hitz Burton",
+                                       justiceName == "TCClark" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",
+                                       justiceName == "HHBurton" ~ "Harold Hitz Burton",))
 
 setwd("~/Desktop/projects/gov50-final-project/final-app")
 write.csv(Citation_Data, "Citation_Data.csv")
@@ -200,6 +204,7 @@ Citation_Data %>%
   distinct(date, .keep_all = TRUE) %>% 
   ggplot(aes(x = date, y = pct_maj_year, fill = justiceName)) +
   geom_col(position = position_dodge()) +
+  facet_wrap( ~justiceName) +
   theme_bw() +
   theme(axis.text.x = element_text(angle = 90)) +
   scale_y_continuous(labels = scales::percent_format())

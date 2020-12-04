@@ -12,6 +12,7 @@ d <- read_csv("Citation_Data.csv")
 # Define UI for application that draws a histogram
 ui <- navbarPage(
     "Final Project",
+    theme = shinythemes::shinytheme("superhero"),
     tabPanel("Home", 
              tabsetPanel(
                          tabPanel("Introduction",
@@ -54,9 +55,30 @@ ui <- navbarPage(
                                                   choices = d$president,
                                                   selected = "Clinton"),
                                       plotOutput("president_direction"))
+                         ),
+                         tabPanel("By Issue",
+                                  titlePanel("Ideological Leaning of Each Justice
+                                             By Issue"),
+                                  p("The next pattern I look at is the ways in which
+                                  each Justice votes on different issues. Pick a 
+                                    justice and two issue areas to compare!"),
+                                  fluidPage(
+                                      selectInput("filter_justice_issue",
+                                                  "Choose a Justice",
+                                                  choices = d$justiceName,
+                                                  selected = "RBGinsburg"),
+                                      selectInput("filter_issue_1",
+                                                  "Choose an Issue Area",
+                                                  choices = d$issueArea_name,
+                                                  selected = "Civil Rights"),
+                                      selectInput("filter_issue_2",
+                                                  "Choose Another Issue Area",
+                                                  choices = d$issueArea_name,
+                                                  selected = "Economic Activity"),
+                                      plotOutput("issue_area_comp")
+                                  )
                          )
-                         )
-             ),
+             )),
     tabPanel("Model",
              titlePanel("Model"),
              p("This is where I will put my model. I am going to use stan_glm to 
@@ -106,7 +128,7 @@ server <- function(input, output, session) {
             filter(justiceName == input$filter_justice) %>% 
             drop_na(direction) %>% 
             ggplot(aes(x = direction)) +
-            geom_bar() +
+            geom_bar(fill = "lightblue") +
             theme_bw() +
             labs(title = "Ideological Direction Count",
                  x = "Direction",
@@ -119,7 +141,7 @@ server <- function(input, output, session) {
             filter(president == input$filter_president) %>% 
             drop_na(direction) %>% 
             ggplot(aes(x = justiceName, y = direction_mean)) +
-            geom_point() +
+            geom_point(color = "navyblue") +
             theme_bw() +
             labs(title = "Average Ideological Direction",
                  subtitle = "Of the Justices Appointed by the Selected President",
@@ -139,6 +161,28 @@ server <- function(input, output, session) {
             theme_bw() +
             theme(axis.text.x = element_text(angle = 90))
     }, res = 96)
+    output$issue_area_comp <- renderPlot({
+        d %>% 
+            filter(justiceName == input$filter_justice_issue) %>% 
+            drop_na(direction) %>% 
+            distinct(sctCite, .keep_all = TRUE) %>% 
+            filter(issueArea_name %in% c(input$filter_issue_1,
+                                         input$filter_issue_2)) %>% 
+            ggplot(aes(x = sctCite, y = direction)) +
+            geom_jitter(height = 0.05, alpha = 0.75,
+                        color = "navyblue") +
+            facet_wrap( ~issueArea_name, ncol = 4) +
+            labs(title = "Ideological Direction by Issue",
+                 x = "",
+                 y = "Ideological Direction") +
+            theme_bw() +
+            theme(plot.title = element_text(hjust = 0.5),
+                  axis.text.x = element_blank(),
+                  axis.ticks.x = element_blank(),
+                  axis.text.y = element_text(angle = 90, hjust = 0.5)) +
+            scale_y_continuous(breaks = c(1, 2),
+                               labels = c("Conservative", "Liberal"))
+    })
     }
 
 
