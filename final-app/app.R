@@ -186,7 +186,7 @@ server <- function(input, output, session) {
             # I am getting a warning that says "Faceting variables must have at
             # least one value, but I selected variables using selected=...
             
-            facet_wrap( ~issueArea_name, ncol = 4) +
+            facet_wrap( ~issueArea_name) +
             labs(title = "Ideological Direction by Issue",
                  x = "",
                  y = "Ideological Direction") +

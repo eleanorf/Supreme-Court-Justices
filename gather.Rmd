@@ -10,6 +10,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(tidyverse)
 library(readr)
 library(gt)
+library(rstanarm)
 ```
 
 
@@ -205,49 +206,15 @@ Citation_Data %>%
                      name = "Chief Justice?")
 ```
 
-Frequency in majority over time?
-```{r}
-# Can I put two graphs next to each other that will allow me to compare two different justices?
-
-Citation_Data %>% 
-  group_by(justiceName, date) %>% 
-  mutate(n_maj_year = sum(majority == 2, na.rm = TRUE)) %>% 
-  mutate(pct_maj_year = n_maj_year/sum(majority %in% c(1, 2), na.rm = TRUE)) %>% 
-  filter(justiceName %in% c("CThomas", "RBGinsburg")) %>% 
-  distinct(date, .keep_all = TRUE) %>% 
-  ggplot(aes(x = date, y = pct_maj_year, fill = justiceName)) +
-  geom_col(position = position_dodge()) +
-  facet_wrap( ~justiceName) +
-  theme_bw() +
-  theme(axis.text.x = element_text(angle = 90)) +
-  scale_y_continuous(labels = scales::percent_format())
-```
-
-
-
-A look at the judge's distribution by issue
-```{r}
-
-# Toggle issueArea to see which justices tend to vote more liberally depending on the context
-
-# 11 resulted in nothing and 13 and 14 have very few data points...
-
-direction_by_issue <- Citation_Data %>% 
-  filter(issueArea == 2) %>% 
-  group_by(justiceName) %>% 
-  mutate(direction_mean_issue = mean(direction, na.rm = TRUE)) %>% 
-  ungroup() %>% 
-  ggplot(aes(x = justiceName, y = direction_mean_issue)) +
-  geom_point() +
-  labs(title = "Average Ideological Leaning By Issue",
-       x = "Justice",
-       y = "Average Ideological Direction") +
-  theme(axis.text.x = element_text(angle = 90))
-```
 
 
 ```{r}
-
+model_edited <- Citation_Data %>% 
+  mutate(outcome = case_when(direction == 1 ~ 1,
+                             direction == 2 ~ 0)) %>% 
+  mutate(date = as.numeric(date))
+  
+model_2 <- stan_g
 ```
 
 

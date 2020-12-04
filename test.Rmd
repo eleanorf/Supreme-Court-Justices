@@ -67,6 +67,32 @@ model <- glm(outcome ~ chief + justiceName + date,
 summary(model)
 ```
 
+```{r}
+d %>% 
+            filter(justice_fullnames == "Ruth Bader Ginsburg") %>% 
+            drop_na(direction) %>% 
+            distinct(sctCite, .keep_all = TRUE) %>% 
+            filter(issueArea_name %in% c("Economic Activity",
+                                         "Criminal Procedure")) %>% 
+            ggplot(aes(x = sctCite, y = direction)) +
+            geom_jitter(height = 0.05, alpha = 0.75,
+                        color = "navyblue") +
+            
+            # I am getting a warning that says "Faceting variables must have at
+            # least one value, but I selected variables using selected=...
+            
+            facet_wrap( ~issueArea_name) +
+            labs(title = "Ideological Direction by Issue",
+                 x = "",
+                 y = "Ideological Direction") +
+            theme_bw() +
+            theme(plot.title = element_text(hjust = 0.5),
+                  axis.text.x = element_blank(),
+                  axis.ticks.x = element_blank(),
+                  axis.text.y = element_text(angle = 90, hjust = 0.5)) +
+            scale_y_continuous(breaks = c(1, 2),
+                               labels = c("Conservative", "Liberal"))
+```
 
 
 
