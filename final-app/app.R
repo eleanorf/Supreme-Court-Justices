@@ -16,7 +16,7 @@ ui <- navbarPage(
     tabPanel("Home", 
              tabsetPanel(
                          tabPanel("Introduction",
-                                  h3("Welcome to My Final Project!"),
+                                  h3("Final Project Title"),
                                   p("In this project, I look at data regarding 
                                     Supreme Court Justices from 1946-2020. In
                                     this first graph, I have shown the average
@@ -36,7 +36,7 @@ ui <- navbarPage(
                                     vote as a Supreme Court Justice."),
                                   fluidPage(
                                       selectInput("filter_justice", "Choose a Justice", 
-                                                  choices = d$justice_fullnames,
+                                                  choices = unique(d$justice_fullnames),
                                                   selected = "Ruth Bader Ginsburg"),
                                       plotOutput("justice_direction"))
                          ),
@@ -51,8 +51,8 @@ ui <- navbarPage(
                                   fluidPage(
                                       selectInput("filter_president", 
                                                   "Choose a President", 
-                                                  choices = d$president,
-                                                  selected = "Clinton"),
+                                                  choices = unique(d$president),
+                                                  selected = "Roosevelt"),
                                       plotOutput("president_direction"))
                          ),
                          tabPanel("Issue Areas",
@@ -64,15 +64,15 @@ ui <- navbarPage(
                                   fluidPage(
                                       selectInput("filter_justice_issue",
                                                   "Choose a Justice",
-                                                  choices = d$justice_fullnames,
+                                                  choices = unique(d$justice_fullnames),
                                                   selected = "Ruth Bader Ginsburg"),
                                       selectInput("filter_issue_1",
                                                   "Choose an Issue Area",
-                                                  choices = d$issueArea_name,
+                                                  choices = unique(d$issueArea_name),
                                                   selected = "Civil Rights"),
                                       selectInput("filter_issue_2",
                                                   "Choose Another Issue Area",
-                                                  choices = d$issueArea_name,
+                                                  choices = unique(d$issueArea_name),
                                                   selected = "Economic Activity"),
                                       plotOutput("issue_area_comp")
                                   )

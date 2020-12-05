@@ -158,10 +158,17 @@ Citation_Data %>%
 # How do I make this an interactive graph you can toggle the president?
 
 Citation_Data %>% 
-  filter(president == "Clinton") %>% 
-  ggplot(aes(x = justiceName, y = direction_mean)) +
-  geom_point() +
-  ylim(c(1, 2))
+  filter(president == "Roosevelt") %>% 
+  drop_na(direction) %>% 
+  ggplot(aes(x = justice_fullnames, y = direction_mean)) +
+  geom_point(color = "navyblue") +
+  theme_bw() +
+  labs(title = "Average Ideological Direction",
+       subtitle = "Of the Justices Appointed by the Selected President",
+       x = "Justices",
+       y = "Ideological Direction") +
+  ylim(c(1, 2)) +
+  theme(axis.text.x = element_text(angle = 20, vjust = 0.5))
 ```
 
 ```{r}
@@ -214,7 +221,12 @@ model_edited <- Citation_Data %>%
                              direction == 2 ~ 0)) %>% 
   mutate(date = as.numeric(date))
   
-model_2 <- stan_g
+model_2 <- stan_glm(data = model_edited,
+                    outcome ~ chief + justice_fullnames + date,
+                    family = "binomial",
+                    refresh = 0)
+model_edited
+
 ```
 
 
