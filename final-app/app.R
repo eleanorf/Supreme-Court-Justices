@@ -5,6 +5,7 @@ library(ggplot2)
 library(ggforce)
 library(readr)
 library(shinythemes)
+library(shinystan)
 
 d <- read_csv("Citation_Data.csv")
 
@@ -16,7 +17,7 @@ ui <- navbarPage(
     tabPanel("Home", 
              tabsetPanel(
                          tabPanel("Introduction",
-                                  h3("Final Project Title"),
+                                  h3("Supreme Court Justices Over the Years"),
                                   p("In this project, I look at data regarding 
                                     Supreme Court Justices from 1946-2020. In
                                     this first graph, I have shown the average
