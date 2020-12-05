@@ -225,8 +225,7 @@ model_2 <- stan_glm(data = model_edited,
                     outcome ~ chief + justice_fullnames + date,
                     family = "binomial",
                     refresh = 0)
-model_edited
-
+print(model_2, digits = 3)
 ```
 
 
