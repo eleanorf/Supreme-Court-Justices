@@ -6,9 +6,13 @@ library(ggforce)
 library(readr)
 library(shinythemes)
 library(shinystan)
+library(gtsummary)
+library(gt)
+library(broom.mixed)
 
 d <- read_csv("Citation_Data.csv")
 
+justiceissue_model <- readRDS("justiceissue_model.rds")
 
 # Define UI for application that draws a histogram
 ui <- navbarPage(
@@ -95,7 +99,10 @@ ui <- navbarPage(
                I have already created a model in my gather.Rmd, but I only used
                glm instead of stan_glm because I am having computer troubles. 
                My dataset is so large that it takes a while for my computer to 
-               run each function.")
+               run each function."),
+             fluidPage(
+                 gt_output("justiceissue_table")
+             )
     ),
     tabPanel("Discussion",
              titlePanel("Discussion Title"),
@@ -215,6 +222,10 @@ server <- function(input, output, session) {
                                values = c("green", "blue"),
                                name = "Chief Justice?")
     }, res = 96)
+    output$justiceissue_table <- render_gt({
+        tbl_regression(justiceissue_model, intercept = TRUE) %>% 
+            as_gt()
+    })
     }
 
 

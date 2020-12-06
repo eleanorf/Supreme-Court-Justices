@@ -215,7 +215,7 @@ Citation_Data %>%
 
 
 
-```{r, message = FALSE}
+```{r, message=FALSE}
 model_edited <- Citation_Data %>% 
   mutate(outcome = case_when(direction == 1 ~ 1,
                              direction == 2 ~ 0)) %>% 
