@@ -228,6 +228,39 @@ model_2 <- stan_glm(data = model_edited,
 print(model_2, digits = 3)
 ```
 
+```{r}
+print(model_3, digits = 3)
+
+saveRDS(model_3, file = "justiceissue_model.rds")
+
+tbl_regression(justiceissue_model, intercept = TRUE) %>% 
+            as_gt() %>% 
+            tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
+
+new_obs <- tibble(justice_fullnames = c("Ruth Bader Ginsburg", "Neil Gorsuch"),
+                  issueArea_name = "Civil Rights")
+pe <- posterior_epred(model_3, 
+                      newdata = new_obs) %>% 
+  as_tibble() %>%
+  rename("Ruth Bader Ginsburg" = `1`,
+         "Neil Gorsuch" = `2`) %>% 
+  pivot_longer(cols = 1:2, 
+               names_to = "Parameter",
+               values_to = "Direction")
+
+pe %>% 
+ggplot(aes(Direction, fill = Parameter)) +
+    geom_histogram(aes(y = after_stat(count/sum(count))),
+                   bins = 1000,
+                   position = "identity") +
+    labs(title = "Posterior Probability Distribution",
+         subtitle = "For Ruth Bader Ginsburg and Neil Gorsuch regarding Civil Right Issues",
+         x = "Expected Direction of Vote",
+         y = "Probability") + 
+    scale_x_continuous(labels = scales::number_format()) +
+    scale_y_continuous(labels = scales::percent_format()) +
+    theme_classic()
+```
 
 
 

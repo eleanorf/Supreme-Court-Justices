@@ -21,7 +21,8 @@ ui <- navbarPage(
     tabPanel("Home", 
              tabsetPanel(
                          tabPanel("Introduction",
-                                  h3("Supreme Court Justices Over the Years"),
+                                  h1("Supreme Court Justices Over the Years"),
+                                  br(),
                                   p("In this project, I look at data regarding 
                                     Supreme Court Justices from 1946-2020. In
                                     this first graph, I have shown the average
@@ -30,8 +31,9 @@ ui <- navbarPage(
                                     represents a conservative vote, and a 
                                     direction equal to 2 represents a liberal 
                                     vote."),
+                                  br(),
                                   fluidPage(
-                                      plotOutput("alljustices_plot")),
+                                      plotOutput("alljustices_plot"))
                          ),
                          tabPanel("Individual Justices",
                                   titlePanel("Ideological Leanings of Each 
@@ -93,21 +95,38 @@ ui <- navbarPage(
                                   )
              )),
     tabPanel("Model",
-             titlePanel("Model"),
-             p("This is where I will put my model. I am going to use stan_glm to 
-               predict how a justice might vote depending on different variables.
-               I have already created a model in my gather.Rmd, but I only used
-               glm instead of stan_glm because I am having computer troubles. 
-               My dataset is so large that it takes a while for my computer to 
-               run each function."),
+             titlePanel("Expected Votes"),
+             p("I used stan_glm to create a model that predicts how each Justice 
+               might vote. I set my outcome variable to be the ideological 
+               direction of each vote, and I included each justice and each 
+               issue area as explanatory variables. In the table below, you can 
+               see the results of my model. In order to see how each justice 
+               would vote given a specific issue, add the value of the desired 
+               justice to the value of the desired issue area. I made the 
+               outcome variable to be 1 if the vote is conservate or 0 if the 
+               vote is liberal. As a result, higher values are more conservative 
+               and lower values are more liberal."),
              fluidPage(
                  gt_output("justiceissue_table")
+             ),
+             br(),
+             p("Next, I forecast how my model expects each justice to vote in a 
+               given issue area. To do this, I created posterior distributions 
+               to generate expected values. Select two justices below to see 
+               their posterior probability distributions for a case under the 
+               civil rights category."),
+             fluidPage(
+                 selectInput("filter_justice_1",
+                             "Choose a Justice",
+                             choices = unique(d$justice_fullnames),
+                             selected = "Ruth Bader Ginsburg"),
+                 selectInput("filter_justice_2",
+                             "Choose a Justice",
+                             choices = unique(d$justice_fullnames),
+                             selected = "Neil Gorsuch"),
+                 plotOutput("justiceissue_plot")
              )
     ),
-    tabPanel("Discussion",
-             titlePanel("Discussion Title"),
-             p("Tour of the modeling choices you made and 
-              an explanation of why you made them")),
     tabPanel("About", 
              titlePanel("About"),
              h3("Project Background and Motivations"),
@@ -224,8 +243,35 @@ server <- function(input, output, session) {
     }, res = 96)
     output$justiceissue_table <- render_gt({
         tbl_regression(justiceissue_model, intercept = TRUE) %>% 
-            as_gt()
+            as_gt() %>% 
+            tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
     })
+    output$justiceissue_plot <- renderPlot({
+        new_obs <- tibble(justice_fullnames = c(input$filter_justice_1, input$filter_justice_2),
+                          issueArea_name = "Civil Rights")
+        pe <- posterior_epred(justiceissue_model, 
+                              newdata = new_obs) %>% 
+            as_tibble() %>%
+            pivot_longer(cols = 1:2, 
+                         names_to = "Parameter",
+                         values_to = "Direction")
+        
+        pe %>% 
+            ggplot(aes(Direction, fill = Parameter)) +
+            geom_histogram(aes(y = after_stat(count/sum(count))),
+                           bins = 1000,
+                           position = "identity") +
+            labs(title = "Posterior Probability Distribution",
+                 subtitle = "For the Selected Justices regarding Civil Rights Issues",
+                 x = "Expected Direction of Vote",
+                 y = "Probability") + 
+            scale_x_continuous(labels = scales::number_format()) +
+            scale_y_continuous(labels = scales::percent_format()) +
+            theme_classic() +
+            scale_fill_manual(values = c("lightblue", "darkblue"),
+                              labels = c(input$filter_justice_1, input$filter_justice_2),
+                              name = "Justices")
+    }, res = 96)
     }
 
 

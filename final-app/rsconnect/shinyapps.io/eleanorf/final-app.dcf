@@ -5,9 +5,9 @@ account: eleanorf
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 3342755
-bundleId: 3940438
+bundleId: 3951428
 url: https://eleanorf.shinyapps.io/final-app/
-when: 1607036504.80882
+when: 1607282175.78896
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: SCDB_2020_01_justiceCentered_Citation.csv|SCDB_2020_01_justiceCentered_Docket.csv

@@ -134,7 +134,7 @@ direction_by_issue <- Citation_Data %>%
 ```
 
 
-```{r, message=FALSE}
+```{r}
 model_data <- Citation_Data %>% 
   mutate(outcome = case_when(direction == 1 ~ 1,
                              direction == 2 ~ 0))
@@ -142,10 +142,16 @@ model_data <- Citation_Data %>%
 model_3 <- stan_glm(data = model_data,
                     outcome ~ justice_fullnames + issueArea_name - 1,
                     family = "binomial",
-                    refresh = 0)
+                    refresh = 0,
+                    iter = 10000)
+
 print(model_3, digits = 3)
 
 saveRDS(model_3, file = "justiceissue_model.rds")
+
+tbl_regression(justiceissue_model, intercept = TRUE) %>% 
+            as_gt() %>% 
+            tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
 ```
 
 ```{r}
