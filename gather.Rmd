@@ -215,14 +215,14 @@ Citation_Data %>%
 
 
 
-```{r}
+```{r, message = FALSE}
 model_edited <- Citation_Data %>% 
   mutate(outcome = case_when(direction == 1 ~ 1,
                              direction == 2 ~ 0)) %>% 
   mutate(date = as.numeric(date))
   
 model_2 <- stan_glm(data = model_edited,
-                    outcome ~ chief + justice_fullnames + date,
+                    outcome ~ chief + justice_fullnames + date - 1,
                     family = "binomial",
                     refresh = 0)
 print(model_2, digits = 3)
