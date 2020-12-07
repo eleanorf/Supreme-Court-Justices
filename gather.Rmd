@@ -11,6 +11,7 @@ library(tidyverse)
 library(readr)
 library(gt)
 library(rstanarm)
+library(ggplot2)
 ```
 
 
@@ -262,7 +263,35 @@ ggplot(aes(Direction, fill = Parameter)) +
     theme_classic()
 ```
 
+```{r}
+Citation_Data %>% 
+  group_by(justice_fullnames, date) %>% 
+  mutate(avg_direction_year = mean(direction, na.rm = TRUE)) %>% 
+  filter(justice_fullnames == "Ruth Bader Ginsburg") %>% 
+  ggplot(aes(x = date, y = avg_direction_year)) +
+  geom_point(color = "darkblue") +
+  geom_line(aes(x = date, y = avg_direction_year)) +
+  labs(title = "Average Ideological Direction Over Time",
+       x = "Year",
+       y = "Average Direction") +
+  theme_bw() +
+  theme(axis.text.x = element_text(angle = 90)) +
+  ylim(c(1, 2))
+```
 
+```{r}
+timeplot <- Citation_Data %>% 
+  group_by(justice_fullnames, date) %>% 
+  mutate(avg_direction_year = mean(direction, na.rm = TRUE))
+
+fit_lm <- lm(avg_direction_year ~ date,
+             data = timeplot)
+
+timeplot$predlm <- predict(fit_lm)
+  
+ggplot(timeplot, mapping = aes(x = date, y = predlm)) +
+  geom_point() 
+```
 
 
 

@@ -1,13 +1,13 @@
-name: final-app
-title: final-app
+name: supreme_court_justices
+title: supreme_court_justices
 username:
 account: eleanorf
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
-appId: 3342755
-bundleId: 3951428
-url: https://eleanorf.shinyapps.io/final-app/
-when: 1607282175.78896
+appId: 3361828
+bundleId: 3955462
+url: https://eleanorf.shinyapps.io/supreme_court_justices/
+when: 1607356893.80452
 asMultiple: FALSE
 asStatic: FALSE
 ignoredFiles: SCDB_2020_01_justiceCentered_Citation.csv|SCDB_2020_01_justiceCentered_Docket.csv

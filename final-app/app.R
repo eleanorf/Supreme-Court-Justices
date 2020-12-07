@@ -9,6 +9,7 @@ library(shinystan)
 library(gtsummary)
 library(gt)
 library(broom.mixed)
+library(rstanarm)
 
 d <- read_csv("Citation_Data.csv")
 
@@ -46,6 +47,17 @@ ui <- navbarPage(
                                                   choices = unique(d$justice_fullnames),
                                                   selected = "Ruth Bader Ginsburg"),
                                       plotOutput("justice_direction"))
+                         ),
+                         tabPanel("Justices Over Time",
+                                  titlePanel("Ideological Leanings of Each 
+                                             Justice Over Time"),
+                                  p("Below is the average leaning of each justice
+                                    by year."),
+                                  fluidPage(
+                                      selectInput("filter_justicetime", "Choose a Justice", 
+                                                  choices = unique(d$justice_fullnames),
+                                                  selected = "Ruth Bader Ginsburg"),
+                                      plotOutput("justice_overtime"))
                          ),
                          tabPanel("Presidents",
                                   titlePanel("Ideological Leanings of Each Justice,
@@ -96,7 +108,8 @@ ui <- navbarPage(
              )),
     tabPanel("Model",
              titlePanel("Expected Votes"),
-             p("I used stan_glm to create a model that predicts how each Justice 
+             sidebarLayout(
+                 sidebarPanel(p("I used stan_glm to create a model that predicts how each Justice 
                might vote. I set my outcome variable to be the ideological 
                direction of each vote, and I included each justice and each 
                issue area as explanatory variables. In the table below, you can 
@@ -105,11 +118,15 @@ ui <- navbarPage(
                justice to the value of the desired issue area. I made the 
                outcome variable to be 1 if the vote is conservate or 0 if the 
                vote is liberal. As a result, higher values are more conservative 
-               and lower values are more liberal."),
-             fluidPage(
-                 gt_output("justiceissue_table")
+               and lower values are more liberal. Scroll through the table to 
+                                see all of the variables.")
+                              ),
+                 mainPanel(
+                     gt_output("justiceissue_table")
+                 )
              ),
              br(),
+             h3("Posterior Probability Distribution Plot"),
              p("Next, I forecast how my model expects each justice to vote in a 
                given issue area. To do this, I created posterior distributions 
                to generate expected values. Select two justices below to see 
@@ -128,7 +145,6 @@ ui <- navbarPage(
              )
     ),
     tabPanel("About", 
-             titlePanel("About"),
              h3("Project Background and Motivations"),
              p("I have always been fascinated by the Supreme Court and curious 
                to learn more about each justice’s voting patterns. This fall, 
@@ -170,6 +186,21 @@ server <- function(input, output, session) {
                  y = "Count") +
             scale_x_continuous(breaks = c(1, 2),
                                label = c("Conservative", "Liberal"))
+    }, res = 96)
+    output$justice_overtime <- renderPlot({
+        d %>% 
+            group_by(justice_fullnames, date) %>% 
+            mutate(avg_direction_year = mean(direction, na.rm = TRUE)) %>%
+            filter(justice_fullnames == input$filter_justicetime) %>% 
+            drop_na(direction) %>% 
+            ggplot(aes(x = date, y = avg_direction_year)) +
+            geom_point(color = "darkblue") +
+            labs(title = "Average Ideological Direction Over Time",
+                 x = "Year",
+                 y = "Average Direction") +
+            theme_bw() +
+            theme(axis.text.x = element_text(angle = 90)) +
+            ylim(c(1, 2))
     }, res = 96)
     output$president_direction <- renderPlot({
         d %>% 
@@ -245,7 +276,10 @@ server <- function(input, output, session) {
         tbl_regression(justiceissue_model, intercept = TRUE) %>% 
             as_gt() %>% 
             tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
-    })
+        
+        # Can I set the height to be equal to the text next to it?
+        
+    }, height = 450)
     output$justiceissue_plot <- renderPlot({
         new_obs <- tibble(justice_fullnames = c(input$filter_justice_1, input$filter_justice_2),
                           issueArea_name = "Civil Rights")
@@ -262,7 +296,7 @@ server <- function(input, output, session) {
                            bins = 1000,
                            position = "identity") +
             labs(title = "Posterior Probability Distribution",
-                 subtitle = "For the Selected Justices regarding Civil Rights Issues",
+                 subtitle = "For the Selected Justices Regarding Civil Rights Issues",
                  x = "Expected Direction of Vote",
                  y = "Probability") + 
             scale_x_continuous(labels = scales::number_format()) +
