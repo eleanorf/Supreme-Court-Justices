@@ -222,6 +222,36 @@ ui <- navbarPage(
 )
 
 server <- function(input, output, session) {
+    output$alljustices_plot <- renderPlot({
+        d %>% 
+            
+            # I used fct_reorder in the x argument because the plot looked messy
+            # in the original order. I also think it is interesting to see the
+            # justices in order of ideological direction. Especially because
+            # this data goes back to 1946, it is engaging to be able to compare
+            # justices from different times.
+            
+            ggplot(aes(x = fct_reorder(justice_fullnames, direction_mean), 
+                       y = direction_mean)) +
+            geom_point(color = "lightblue") +
+            labs(title = "Ideological Direction of Supreme Court Justices",
+                 subtitle = "Average of Ideological Leanings in Cases from 1946-2020",
+                 x = "Justices",
+                 y = "Ideological Direction") +
+            theme_bw() +
+            
+            # I had to rotate the x axis labels in order to see each justice's
+            # name.
+            
+            theme(axis.text.x = element_text(angle = 90))
+    }, res = 96)
+    
+    # This graph is quite simple, but I think it is still important. Personally,
+    # I enjoyed seeing which justices tended to vote more frequently liberal or
+    # conservative. Although Supreme Court Justices claim to be above politics
+    # and say that they vote with the best interests of the country in mind,
+    # they  clearly lean one way or the other.
+    
     output$justice_direction <- renderPlot({
         d %>% 
             filter(justice_fullnames == input$filter_justice) %>% 
@@ -235,16 +265,32 @@ server <- function(input, output, session) {
             scale_x_continuous(breaks = c(1, 2),
                                label = c("Conservative", "Liberal"))
     }, res = 96)
+    
+    # This plot was fun to make and answered a lot of questions that I had going
+    # into this project. As a whole, the trend lines are relatively flat. This
+    # shows that justices don't really change their views much over their tenure
+    # on the Supreme Court.
+    
     output$justice_overtime <- renderPlot({
         d %>% 
-            mutate(outcome = case_when(direction == 1 ~ 1,
-                                       direction == 2 ~ 0)) %>% 
+            
+            # I didn't originally have this line in my code. When I created the
+            # date variable, it was automatically saved as a character vector
+            # instead of numeric. Then, when I tried to use geom_smooth and make
+            # a trend line, it wouldn't show up on my graph. I realized then
+            # that it was because the date column was not numeric, so I added
+            # this line.
+            
             mutate(date = as.numeric(date)) %>% 
             group_by(justice_fullnames, date) %>% 
             mutate(avg_direction_year = mean(direction, na.rm = TRUE)) %>%
             filter(justice_fullnames == input$filter_justicetime) %>% 
             ggplot(aes(x = date, y = avg_direction_year)) +
             geom_point(color = "darkblue") +
+            
+            # Adding this geom_smooth line with method = "lm" created a linear
+            # trend line for my data.
+            
             geom_smooth(method = "lm", formula = y ~ x) +
             labs(title = "Average Ideological Direction Over Time",
                  x = "Year",
@@ -253,6 +299,13 @@ server <- function(input, output, session) {
             theme(axis.text.x = element_text(angle = 90)) +
             ylim(c(1, 2))
     }, res = 96)
+    
+    # This graph also answered a couple of questions that I had going into the
+    # project. I knew that liberal presidents nominated liberal justices and the
+    # opposite was true for conservatives, but it is striking to see all of them
+    # in a graph like this. I was surprised by my results, but it is fun to see
+    # it like this.
+    
     output$president_direction <- renderPlot({
         d %>% 
             filter(president == input$filter_president) %>% 
@@ -264,23 +317,16 @@ server <- function(input, output, session) {
                  subtitle = "Of the Justices Appointed by the Selected President",
                  x = "Justice",
                  y = "Ideological Direction") +
-            ylim(c(1, 2))
-    }, res = 96)
-    output$alljustices_plot <- renderPlot({
-        d %>% 
+            ylim(c(1, 2)) +
             
-            # How do I make it so that the x axis labels aren't centered?
+            # When I first made this graph, I didn't change the angle of the x
+            # axis labels. Then, I realized that when the names change, some are
+            # longer than others and overlap, so I had to slightly rotate the
+            # names.
             
-            ggplot(aes(x = fct_reorder(justice_fullnames, direction_mean), 
-                       y = direction_mean)) +
-            geom_point(color = "lightblue") +
-            labs(title = "Ideological Direction of Supreme Court Justices",
-                 subtitle = "Average of Ideological Leanings in Cases from 1946-2020",
-                 x = "Justices",
-                 y = "Ideological Direction") +
-            theme_bw() +
-            theme(axis.text.x = element_text(angle = 90))
+            theme(axis.text.x = element_text(angle = 20, vjust = 0.5))
     }, res = 96)
+    
     output$issue_area_comp <- renderPlot({
         d %>% 
             filter(justice_fullnames == input$filter_justice_issue) %>% 
@@ -289,12 +335,16 @@ server <- function(input, output, session) {
             filter(issueArea_name %in% c(input$filter_issue_1,
                                          input$filter_issue_2)) %>% 
             ggplot(aes(x = sctCite, y = direction)) +
+            
+            # I used geom_jitter instead of geom_point so that you can actually
+            # see the different points. I realized it doesn't matter were
+            # exactly the points are so long as they are in the area of liberal
+            # or in the area of conservative because the only options for y are
+            # 1 or 2, meaning there are no values in between. I then added an
+            # alpha argument to make it even more clear.
+            
             geom_jitter(height = 0.05, alpha = 0.75,
                         color = "navyblue") +
-            
-            # I am getting a warning that says "Faceting variables must have at
-            # least one value, but I selected variables using selected=...
-            
             facet_wrap( ~issueArea_name) +
             labs(title = "Ideological Direction by Issue",
                  x = "",
@@ -305,14 +355,33 @@ server <- function(input, output, session) {
                   axis.ticks.x = element_blank(),
                   axis.text.y = element_text(angle = 90, hjust = 0.5)) +
             scale_y_continuous(breaks = c(1, 2),
+                               
+                               # I changed these labels to liberal and
+                               # conservative because, unlike the other graphs,
+                               # I did not take the average ideological
+                               # direction for each judge, I simply left the
+                               # direction as is. Thus, the only y values were 1
+                               # or 2, representing conservative or liberal.
+                               
                                labels = c("Conservative", "Liberal"))
     }, res = 96)
+    
+    # I thought this was an interesting relationship to look at. I have always
+    # wondered how much the chief's vote impacts the votes of the other
+    # justices. Obviously this graph doesn't show causation or give any
+    # explanation, but the pattern is thought-provoking.
+    
     output$chief_majority_plot <- renderPlot({
         d %>% 
             group_by(justice_fullnames) %>% 
             mutate(n_maj = sum(majority == 2, na.rm = TRUE),
                    pct_maj = n_maj/sum(majority, na.rm = TRUE),
                    .groups = "drop") %>% 
+            
+            # I created a variable that says whether or not the justice was a
+            # chief justice or not to show that the chiefs are more frequently
+            # in the majority than most other justices.
+            
             ggplot(aes(x = justice_fullnames, y = pct_maj, color = chiefYES)) +
             geom_point() +
             labs(title = "Are Chief Justices More Frequently in the Majority?",
@@ -323,16 +392,34 @@ server <- function(input, output, session) {
                                values = c("green", "blue"),
                                name = "Chief Justice?")
     }, res = 96)
+    
     output$justiceissue_table <- render_gt({
+        
+        # I saved my model as an object, so it was easy to quickly load the
+        # object into my shiny app instead of waiting for the stan_glm to run
+        # each time.
+        
         tbl_regression(justiceissue_model, intercept = TRUE) %>% 
             as_gt() %>% 
             tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
         
-        # Can I set the height to be equal to the text next to it?
+        # I set the height argument to be similar to that of the explanatory
+        # text in the panel next to is. I'm trying to figure out how to
+        # automatically make them equal instead of manually doing it...
         
     }, height = 480)
+    
     output$justiceissue_plot <- renderPlot({
         new_obs <- tibble(justice_fullnames = c(input$filter_justice_1, input$filter_justice_2),
+                          
+                          # In order to avoid complications with issue areas
+                          # that have very little data, and in some cases, only
+                          # data for a handful of justices, I decided to set the
+                          # issue area as a constant in this graph. You can
+                          # still pick the two justices to compare, but you will
+                          # be comparing the expected votes in a case regarding
+                          # civil rights.
+                          
                           issueArea_name = "Civil Rights")
         pe <- posterior_epred(justiceissue_model, 
                               newdata = new_obs) %>% 
@@ -354,11 +441,15 @@ server <- function(input, output, session) {
             scale_y_continuous(labels = scales::percent_format()) +
             theme_classic() +
             scale_fill_manual(values = c("lightblue", "darkblue"),
-                              labels = c(input$filter_justice_1, input$filter_justice_2),
+                              
+                              # I put the inputs for justices as the labels too
+                              # so that the graph is easy to understand!
+                              
+                              labels = c(input$filter_justice_1, 
+                                         input$filter_justice_2),
                               name = "Justices")
     }, res = 96)
     }
-
 
 # Run the application 
 shinyApp(ui = ui, 

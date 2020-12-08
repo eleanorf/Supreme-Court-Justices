@@ -265,8 +265,6 @@ ggplot(aes(Direction, fill = Parameter)) +
 
 ```{r}
 Citation_Data %>% 
-  mutate(outcome = case_when(direction == 1 ~ 1,
-                             direction == 2 ~ 0)) %>% 
   mutate(date = as.numeric(date)) %>% 
   group_by(justice_fullnames, date) %>% 
   mutate(avg_direction_year = mean(direction, na.rm = TRUE)) %>% 
