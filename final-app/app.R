@@ -11,16 +11,27 @@ library(gt)
 library(broom.mixed)
 library(rstanarm)
 
+# Here I load the data which I downloaded from WashU Law's Supreme Court
+# Database.
+
 d <- read_csv("Citation_Data.csv")
+
+# I saved my model as an object in gather.Rmd so that I would not have to load
+# the stan_glm each time I run my app.
 
 justiceissue_model <- readRDS("justiceissue_model.rds")
 
-# Define UI for application that draws a histogram
 ui <- navbarPage(
     "Final Project",
     theme = shinythemes::shinytheme("superhero"),
     tabPanel("Home", 
              tabsetPanel(
+                 
+                 # My home panel has tabs inside of it that show all of the
+                 # graphs that I made for this project. I could have put them
+                 # all on one page, but I preferred the cleaner look of
+                 # different tabs for each.
+                 
                          tabPanel("Introduction",
                                   h1("Supreme Court Justices Over the Years"),
                                   br(),
@@ -45,6 +56,15 @@ ui <- navbarPage(
                                   fluidPage(
                                       selectInput("filter_justice", "Choose a Justice", 
                                                   choices = unique(d$justice_fullnames),
+                                                  
+                                                  # I selected a choice for each
+                                                  # of the graphs that I made in
+                                                  # this project. For most I
+                                                  # used RBG as the default,
+                                                  # because she was a large part
+                                                  # of the motivation for this
+                                                  # project.
+                                                  
                                                   selected = "Ruth Bader Ginsburg"),
                                       plotOutput("justice_direction"))
                          ),
@@ -75,6 +95,14 @@ ui <- navbarPage(
                                       plotOutput("president_direction"))
                          ),
                          tabPanel("Issue Areas",
+                                  
+                                  # I don't love the way this graph turned out.
+                                  # I think it is hard to tell what exactly I am
+                                  # trying to show here. Once I get through my
+                                  # demo day, I will try a different way of
+                                  # representing this data. Dan suggested a
+                                  # histogram.
+                                  
                                   titlePanel("Ideological Leaning of Each Justice
                                              By Issue"),
                                   p("The next pattern I look at is the ways in which
@@ -89,6 +117,11 @@ ui <- navbarPage(
                                                   "Choose an Issue Area",
                                                   choices = unique(d$issueArea_name),
                                                   selected = "Civil Rights"),
+                                      
+                                      # Not all of these issues have data
+                                      # points. I should filter the options so
+                                      # you can only choose from a select few.
+                                      
                                       selectInput("filter_issue_2",
                                                   "Choose Another Issue Area",
                                                   choices = unique(d$issueArea_name),
@@ -109,17 +142,20 @@ ui <- navbarPage(
     tabPanel("Model",
              titlePanel("Expected Votes"),
              sidebarLayout(
-                 sidebarPanel(p("I used stan_glm to create a model that predicts how each Justice 
-               might vote. I set my outcome variable to be the ideological 
-               direction of each vote, and I included each justice and each 
-               issue area as explanatory variables. In the table below, you can 
-               see the results of my model. In order to see how each justice 
-               would vote given a specific issue, add the value of the desired 
-               justice to the value of the desired issue area. I made the 
-               outcome variable to be 1 if the vote is conservate or 0 if the 
-               vote is liberal. As a result, higher values are more conservative 
-               and lower values are more liberal. Scroll through the table to 
-                                see all of the variables.")
+                 sidebarPanel(p("I used stan_glm to create a model that predicts 
+                 how each Justice might vote. I set my outcome variable to be 
+                 the ideological direction of each vote, and I included each 
+                 justice and each issue area as explanatory variables. In the 
+                 table below, you can see the results of my model. The results 
+                 are slightly hard to interpret. Because I ran a logistic 
+                 regression, you would have to put the coefficients into a logit 
+                 link function in order for them to have a 1:1 relationship with
+                 the y variable. However, the relationship between the 
+                 coefficients and therefore between justices and issue is much
+                 simpler. I made the outcome variable to be 1 if the vote is 
+                 conservative or 0 if the vote is liberal. As a result, higher 
+                 values are more conservative and lower values are more liberal. 
+                 Scroll through the table to see all of the variables.")
                               ),
                  mainPanel(
                      gt_output("justiceissue_table")
@@ -150,29 +186,41 @@ ui <- navbarPage(
                to learn more about each justice’s voting patterns. This fall, 
                Justice Ruth Bader Ginsburg passed away and President Trump 
                nominated Amy Coney Barret who was quickly confirmed by the 
-               senate. It felt as though the entire world was abuzz with 
-               questions, asking what this change in the Court would mean for 
-               the US. Personally, I wanted to know how much the ideological 
-               makeup of the court really mattered. Supreme Court Justices 
-               claim to be above politics, and one would hope that their life 
-               terms remove them from the political pressures of reelection. 
-               In this project, I look at the ideological direction of each 
-               justice’s votes from multiple angles. Then, I create a model 
-               that attempts to predict how a justice might vote given different 
-               explanatory variables.
-               In order to answer these questions, I look at data regarding 
+               senate. The entire country has been wondering what this change in 
+               the Court will mean for the US. Personally, I wanted to better 
+               understand how much the ideological makeup of the court really 
+               mattered. Supreme Court Justices claim to be above politics, and 
+               one would hope that their life terms remove them from the 
+               political pressures of reelection. However, I wanted to look at 
+               the patterns myself."),
+             br(),
+             
+             # Here I linked the codebook of my data, so anyone can see where
+             # exactly it came from.
+             
+             p("In order to answer these questions, I looked at data regarding 
                Supreme Court justices from 1946 to 2020. The data I used came 
                from", a("Washington University Law’s Supreme Court Database.",
-                        href = "http://supremecourtdatabase.org/documentation.php")
-             ),
+                        href = "http://supremecourtdatabase.org/documentation.php")),
+             br(),
+             p("In this project, I looked at the ideological direction of each 
+               justice’s votes from multiple angles, comparing their votes 
+               with those of other justices and with their own votes over time. 
+               Then, I ran a logistic regression and created a model that 
+               attempts to predict how each justice might vote given different 
+               explanatory variables."),
              h3("About Me"),
+             
+             # I also linked my repo. This way, anyone looking at the project
+             # can easily access my code.
+             
              p("My name is Eleanor Fitzgibbons and I study Government at Harvard. 
-             You can reach me at efitzgibbons@college.harvard.edu. This is a 
-             link to my", a("Github repository.", 
-                            href = "https://github.com/eleanorf/gov50-final-project")))
+             You can reach me at efitzgibbons@college.harvard.edu. If you would 
+             like to take a look at my code, this is a link to my", 
+               a("Github repository.",
+                 href = "https://github.com/eleanorf/gov50-final-project")))
 )
 
-# Define server logic required to draw a histogram
 server <- function(input, output, session) {
     output$justice_direction <- renderPlot({
         d %>% 
@@ -189,12 +237,15 @@ server <- function(input, output, session) {
     }, res = 96)
     output$justice_overtime <- renderPlot({
         d %>% 
+            mutate(outcome = case_when(direction == 1 ~ 1,
+                                       direction == 2 ~ 0)) %>% 
+            mutate(date = as.numeric(date)) %>% 
             group_by(justice_fullnames, date) %>% 
             mutate(avg_direction_year = mean(direction, na.rm = TRUE)) %>%
             filter(justice_fullnames == input$filter_justicetime) %>% 
-            drop_na(direction) %>% 
             ggplot(aes(x = date, y = avg_direction_year)) +
             geom_point(color = "darkblue") +
+            geom_smooth(method = "lm", formula = y ~ x) +
             labs(title = "Average Ideological Direction Over Time",
                  x = "Year",
                  y = "Average Direction") +
@@ -279,7 +330,7 @@ server <- function(input, output, session) {
         
         # Can I set the height to be equal to the text next to it?
         
-    }, height = 450)
+    }, height = 480)
     output$justiceissue_plot <- renderPlot({
         new_obs <- tibble(justice_fullnames = c(input$filter_justice_1, input$filter_justice_2),
                           issueArea_name = "Civil Rights")
