@@ -22,7 +22,7 @@ d <- read_csv("Citation_Data.csv")
 justiceissue_model <- readRDS("justiceissue_model.rds")
 
 ui <- navbarPage(
-    "Final Project",
+    "Supreme Court Justices Over the Years",
     theme = shinythemes::shinytheme("superhero"),
     tabPanel("Home", 
              tabsetPanel(
@@ -33,7 +33,8 @@ ui <- navbarPage(
                  # different tabs for each.
                  
                          tabPanel("Introduction",
-                                  h1("Supreme Court Justices Over the Years"),
+                                  titlePanel("Average Ideological Leaning of Each 
+                                     Justice from 1946-2020"),
                                   br(),
                                   p("In this project, I look at data regarding 
                                     Supreme Court Justices from 1946-2020. In
@@ -54,7 +55,15 @@ ui <- navbarPage(
                                   each justice cast a liberal or conservative 
                                     vote as a Supreme Court Justice."),
                                   fluidPage(
-                                      selectInput("filter_justice", "Choose a Justice", 
+                                      selectInput("filter_justice", 
+                                                  "Choose a Justice", 
+                                                  
+                                                  # Sometimes my lines go over
+                                                  # 80 characters because this
+                                                  # part of the app has been
+                                                  # indented so far that it is
+                                                  # unavoidable.
+                                                  
                                                   choices = unique(d$justice_fullnames),
                                                   
                                                   # I selected a choice for each
@@ -74,7 +83,8 @@ ui <- navbarPage(
                                   p("Below is the average leaning of each justice
                                     by year."),
                                   fluidPage(
-                                      selectInput("filter_justicetime", "Choose a Justice", 
+                                      selectInput("filter_justicetime", 
+                                                  "Choose a Justice", 
                                                   choices = unique(d$justice_fullnames),
                                                   selected = "Ruth Bader Ginsburg"),
                                       plotOutput("justice_overtime"))
@@ -93,41 +103,6 @@ ui <- navbarPage(
                                                   choices = unique(d$president),
                                                   selected = "Roosevelt"),
                                       plotOutput("president_direction"))
-                         ),
-                         tabPanel("Issue Areas",
-                                  
-                                  # I don't love the way this graph turned out.
-                                  # I think it is hard to tell what exactly I am
-                                  # trying to show here. Once I get through my
-                                  # demo day, I will try a different way of
-                                  # representing this data. Dan suggested a
-                                  # histogram.
-                                  
-                                  titlePanel("Ideological Leaning of Each Justice
-                                             By Issue"),
-                                  p("The next pattern I look at is the ways in which
-                                  each Justice votes on different issues. Pick a 
-                                    justice and two issue areas to compare!"),
-                                  fluidPage(
-                                      selectInput("filter_justice_issue",
-                                                  "Choose a Justice",
-                                                  choices = unique(d$justice_fullnames),
-                                                  selected = "Ruth Bader Ginsburg"),
-                                      selectInput("filter_issue_1",
-                                                  "Choose an Issue Area",
-                                                  choices = unique(d$issueArea_name),
-                                                  selected = "Civil Rights"),
-                                      
-                                      # Not all of these issues have data
-                                      # points. I should filter the options so
-                                      # you can only choose from a select few.
-                                      
-                                      selectInput("filter_issue_2",
-                                                  "Choose Another Issue Area",
-                                                  choices = unique(d$issueArea_name),
-                                                  selected = "Economic Activity"),
-                                      plotOutput("issue_area_comp")
-                                  )
                          ),
                          tabPanel("Chief Justices",
                                   titlePanel("Is the Chief Justice Typically in
@@ -186,13 +161,13 @@ ui <- navbarPage(
                to learn more about each justice’s voting patterns. This fall, 
                Justice Ruth Bader Ginsburg passed away and President Trump 
                nominated Amy Coney Barret who was quickly confirmed by the 
-               senate. The entire country has been wondering what this change in 
-               the Court will mean for the US. Personally, I wanted to better 
-               understand how much the ideological makeup of the court really 
-               mattered. Supreme Court Justices claim to be above politics, and 
-               one would hope that their life terms remove them from the 
-               political pressures of reelection. However, I wanted to look at 
-               the patterns myself."),
+               senate. Since then, the entire country has been wondering what 
+               this change in the Court will mean for the US. Personally, I 
+               wanted to better understand how much the ideological makeup of 
+               the court really mattered. Supreme Court Justices claim to be 
+               above politics, and one would hope that their life terms remove 
+               them from the political pressures of reelection. However, I 
+               wanted to look at the patterns myself."),
              br(),
              
              # Here I linked the codebook of my data, so anyone can see where
@@ -325,45 +300,6 @@ server <- function(input, output, session) {
             # names.
             
             theme(axis.text.x = element_text(angle = 20, vjust = 0.5))
-    }, res = 96)
-    
-    output$issue_area_comp <- renderPlot({
-        d %>% 
-            filter(justice_fullnames == input$filter_justice_issue) %>% 
-            drop_na(direction) %>% 
-            distinct(sctCite, .keep_all = TRUE) %>% 
-            filter(issueArea_name %in% c(input$filter_issue_1,
-                                         input$filter_issue_2)) %>% 
-            ggplot(aes(x = sctCite, y = direction)) +
-            
-            # I used geom_jitter instead of geom_point so that you can actually
-            # see the different points. I realized it doesn't matter were
-            # exactly the points are so long as they are in the area of liberal
-            # or in the area of conservative because the only options for y are
-            # 1 or 2, meaning there are no values in between. I then added an
-            # alpha argument to make it even more clear.
-            
-            geom_jitter(height = 0.05, alpha = 0.75,
-                        color = "navyblue") +
-            facet_wrap( ~issueArea_name) +
-            labs(title = "Ideological Direction by Issue",
-                 x = "",
-                 y = "Ideological Direction") +
-            theme_bw() +
-            theme(plot.title = element_text(hjust = 0.5),
-                  axis.text.x = element_blank(),
-                  axis.ticks.x = element_blank(),
-                  axis.text.y = element_text(angle = 90, hjust = 0.5)) +
-            scale_y_continuous(breaks = c(1, 2),
-                               
-                               # I changed these labels to liberal and
-                               # conservative because, unlike the other graphs,
-                               # I did not take the average ideological
-                               # direction for each judge, I simply left the
-                               # direction as is. Thus, the only y values were 1
-                               # or 2, representing conservative or liberal.
-                               
-                               labels = c("Conservative", "Liberal"))
     }, res = 96)
     
     # I thought this was an interesting relationship to look at. I have always

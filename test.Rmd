@@ -11,9 +11,18 @@ library(tidyverse)
 library(readr)
 library(gt)
 library(rstanarm)
+
+# This Rmd is where I tested things I was curious or confused about. I didn't
+# end up using this code in my final shiny app. I think of this Rmd as more of a
+# piece of scrap paper.
+
 ```
 
 ```{r}
+
+# I used this data originally, but then I decided that I preferred the data
+# organized by Supreme Court Citatino instead of Docket.
+
 SCDB_2020_01_justiceCentered_Docket <- 
   read_csv("final-app/SCDB_2020_01_justiceCentered_Docket.csv",
            col_types = cols(.default = col_double(),
@@ -38,6 +47,7 @@ SCDB_2020_01_justiceCentered_Docket <-
 Citation_Data %>% 
   distinct(justice_fullnames)
 ```
+
 ```{r}
 IssueArea <- tibble(Number = c(1:14),
                     Issue = c("Criminal Procedure", "Civil Rights", 
@@ -62,6 +72,9 @@ model_data <- Citation_Data %>%
   mutate(outcome = case_when(direction == 1 ~ 1,
                              direction == 2 ~ 0))
 
+# Here's the model I ran originally out of curiosity. I knew the stan_glm would
+# take forever, so I quickly ran this to get an idea of what I would see.
+
 model <- glm(outcome ~ chief + justiceName + date,
              data = model_data,
              family = "binomial")
@@ -69,6 +82,11 @@ summary(model)
 ```
 
 ```{r}
+
+# I had a problem with my code in this graph once I ran the app. I put the code
+# into this Rmd to try to figure it out. I tried just about everything before
+# deciding to restart R and my problem was solved.
+
 d %>% 
             filter(justice_fullnames == "Ruth Bader Ginsburg") %>% 
             drop_na(direction) %>% 
@@ -97,13 +115,15 @@ d %>%
 
 Frequency in majority over time?
 ```{r}
-# Can I put two graphs next to each other that will allow me to compare two different justices?
+
+# This idea was cool but I couldn't figure out how to include only the years
+# that each justice served on the court...
 
 Citation_Data %>% 
   group_by(justiceName, date) %>% 
   mutate(n_maj_year = sum(majority == 2, na.rm = TRUE)) %>% 
   mutate(pct_maj_year = n_maj_year/sum(majority %in% c(1, 2), na.rm = TRUE)) %>% 
-  filter(justiceName %in% c("SGBreyer", "RBGinsburg")) %>% 
+  filter(justiceName %in% c("SSotomayor", "RBGinsburg")) %>% 
   distinct(date, .keep_all = TRUE) %>% 
   ggplot(aes(x = date, y = pct_maj_year, fill = justiceName)) +
   geom_col(position = position_dodge()) +
@@ -116,11 +136,13 @@ Citation_Data %>%
 A look at each justice's distribution by issue
 ```{r}
 
-# Toggle issueArea to see which justices tend to vote more liberally depending on the context
+# I wanted to see which justices tend to vote more liberally depending on the
+# context... The results were not super interesting and some of the issue areas
+# had zero data.
 
 # 11 resulted in nothing and 13 and 14 have very few data points...
 
-direction_by_issue <- Citation_Data %>% 
+Citation_Data %>% 
   filter(issueArea == 2) %>% 
   group_by(justiceName) %>% 
   mutate(direction_mean_issue = mean(direction, na.rm = TRUE)) %>% 
@@ -135,6 +157,11 @@ direction_by_issue <- Citation_Data %>%
 
 
 ```{r}
+
+# All of this should actualy be in my gather.Rmd, but it took hours to load this
+# model and I didn't want to wait for it to load again. Instead, I just saved it
+# as an object here and then worked with the object model_3 in the other Rmd.
+
 model_data <- Citation_Data %>% 
   mutate(outcome = case_when(direction == 1 ~ 1,
                              direction == 2 ~ 0))
@@ -160,6 +187,42 @@ Citation_Data %>%
   distinct(sctCite, .keep_all = TRUE)
 ```
 
+```{r, message=FALSE}
 
+# I played around with a couple different models. I originally wanted to look at
+# the way each justice might vote with the date variable as a constant in order
+# to remove the possibility that time could be confounding the directions. I had
+# more trouble interpreting this model, however, and I don't think it was doing
+# exactly what I wanted, so I decided to use issueArea as my explanatory
+# variable in model_3.
 
+model_edited <- Citation_Data %>% 
+  mutate(outcome = case_when(direction == 1 ~ 1,
+                             direction == 2 ~ 0)) %>% 
+  mutate(date = as.numeric(date))
+  
+model_2 <- stan_glm(data = model_edited,
+                    outcome ~ chief + justice_fullnames + date - 1,
+                    family = "binomial",
+                    refresh = 0)
+print(model_2, digits = 3)
+```
 
+```{r}
+
+# Here is scrap work from when my TF and I were trying to figure out why my
+# geom_smooth wouldn't work in the graph that looks at justice leaning over
+# time. We then realized that my date variable was not numeric!
+
+timeplot <- Citation_Data %>% 
+  group_by(justice_fullnames, date) %>% 
+  mutate(avg_direction_year = mean(direction, na.rm = TRUE))
+
+fit_lm <- lm(avg_direction_year ~ date,
+             data = timeplot)
+
+timeplot$predlm <- predict(fit_lm)
+  
+ggplot(timeplot, mapping = aes(x = date, y = predlm)) +
+  geom_point() 
+```

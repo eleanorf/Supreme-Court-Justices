@@ -12,6 +12,11 @@ library(readr)
 library(gt)
 library(rstanarm)
 library(ggplot2)
+
+# This Rmd includes all of the code that I used in my final app. I copy and
+# pasted my graphs from here to the shiny app, and then I changed the parts that
+# needed to be filtered to different inputs once in the app.
+
 ```
 
 
@@ -36,31 +41,43 @@ SCDB_2020_01_justiceCentered_Citation <-
                             justiceName = col_character()))
 
 Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>% 
-  select(sctCite, caseId, caseName, dateDecision, dateArgument, chief, issue, issueArea,
-         decisionDirection, justiceName, vote, opinion, direction, majority) %>% 
+  select(sctCite, caseId, caseName, dateDecision, dateArgument, chief, issue, 
+         issueArea, decisionDirection, justiceName, vote, opinion, direction, 
+         majority) %>% 
   mutate(date = str_sub(dateDecision, -4)) %>% 
 
-  # Originally did == instead of %in%  
+  # I originally did == instead of %in%  
   
-  mutate(president = case_when(justiceName %in% c("RHJackson", "WODouglas", "FFrankfurter",
-                                                "SFReed", "HLBlack", "WBRutledge",
-                                                "FMurphy") ~ "Roosevelt",
-                               justiceName %in% c("HHBurton", "FMVinson", "TCClark",
-                                                "SMinton") ~ "Truman",
-                               justiceName %in% c("EWarren", "JHarlan2", "WJBrennan",
-                                                "CEWhittaker", "PStewart") ~ "Eisenhower",
-                               justiceName %in% c("BRWhite", "AJGoldberg") ~ "Kennedy",
-                               justiceName %in% c("AFortas", "TMarshall") ~ "Johnson",
-                               justiceName %in% c("WEBurger", "HABlackmun", "LFPowell", 
-                                                "WHRehnquist") ~ "Nixon",
+  mutate(president = case_when(justiceName %in% c("RHJackson", "WODouglas", 
+                                                  "FFrankfurter", "SFReed", 
+                                                  "HLBlack", "WBRutledge",
+                                                  "FMurphy") ~ "Roosevelt",
+                               justiceName %in% c("HHBurton", "FMVinson", 
+                                                  "TCClark", 
+                                                  "SMinton") ~ "Truman",
+                               justiceName %in% c("EWarren", "JHarlan2", 
+                                                  "WJBrennan", "CEWhittaker", 
+                                                  "PStewart") ~ "Eisenhower",
+                               justiceName %in% c("BRWhite", 
+                                                  "AJGoldberg") ~ "Kennedy",
+                               justiceName %in% c("AFortas", 
+                                                  "TMarshall") ~ "Johnson",
+                               justiceName %in% c("WEBurger", "HABlackmun", 
+                                                  "LFPowell",
+                                                  "WHRehnquist") ~ "Nixon",
                                justiceName %in% c("JPStevens") ~ "Ford",
                                justiceName %in% c("SDOConnor", "AScalia", 
                                                 "AMKennedy") ~ "Reagan",
-                               justiceName %in% c("DHSouter", "CThomas") ~ "HW Bush",
-                               justiceName %in% c("RBGinsburg", "SGBreyer") ~ "Clinton",
-                               justiceName %in% c("JGRoberts", "SAAlito") ~ "Bush",
-                               justiceName %in% c("SSotomayor", "EKagan") ~ "Obama",
-                               justiceName %in% c("NMGorsuch", "BMKavanaugh") ~ "Trump")) %>%
+                               justiceName %in% c("DHSouter", 
+                                                  "CThomas") ~ "HW Bush",
+                               justiceName %in% c("RBGinsburg", 
+                                                  "SGBreyer") ~ "Clinton",
+                               justiceName %in% c("JGRoberts", 
+                                                  "SAAlito") ~ "Bush",
+                               justiceName %in% c("SSotomayor", 
+                                                  "EKagan") ~ "Obama",
+                               justiceName %in% c("NMGorsuch", 
+                                                  "BMKavanaugh") ~ "Trump")) %>%
   group_by(justiceName) %>% 
   mutate(direction_mean = mean(direction, na.rm = TRUE)) %>% 
   ungroup() %>% 
@@ -81,6 +98,9 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                                     issueArea == 12 ~ "Federal Taxation",
                                     issueArea == 13 ~ "Miscellaneous",
                                     issueArea == 14 ~ "Private Action")) %>% 
+  
+  # Some of these lines are over 80 characters because I can't break them up.
+  
   mutate(justice_fullnames = case_when(justiceName == "HHBurton" ~ "Harold Hitz Burton",
                                        justiceName == "RHJackson" ~ "Robert H. Jackson",
                                        justiceName == "WODouglas" ~ "William O. Douglas",
@@ -120,6 +140,9 @@ Citation_Data <- SCDB_2020_01_justiceCentered_Citation %>%
                                        justiceName == "NMGorsuch" ~ "Neil Gorsuch",
                                        justiceName == "BMKavanaugh" ~ "Brett Kavanaugh"))
 
+# I was having trouble loading this dataset into my app, so I had to play around
+# with the working directory here.
+
 setwd("~/Desktop/projects/gov50-final-project/final-app")
 write.csv(Citation_Data, "Citation_Data.csv")
 
@@ -127,7 +150,12 @@ write.csv(Citation_Data, "Citation_Data.csv")
 
 ```{r}
 
-# How do I make this interactive so you can see the leaning of each justice depending on who you pick?
+# For most of these graphs, I specified which justice I wanted to look at using
+# the filter argument. However, when I put them in my app, I wanted to make most
+# of them interactive, so I had to change the filter arguments in my app to be
+# whatever the input is. That's why this code looks slightly different in the
+# shiny app.
+
 Citation_Data %>% 
   filter(justiceName == "RBGinsburg") %>% 
   drop_na(direction) %>% 
@@ -142,6 +170,14 @@ Citation_Data %>%
 ```
 
 ```{r}
+
+# I put this graph on the first page of my shiny app. My final project focuses
+# on the voting records of each justice and their ideological leaning. I thought
+# this graph pretty accurately gives a snapshot of the data I'm exploring, as it
+# gives the average direction grouped by justice. It also displays the justices
+# in order of most to least conservative. I think it's interesting to see all of
+# these justices from different time periods on one page like this.
+
 Citation_Data %>% 
   ggplot(aes(x = fct_reorder(justiceName, direction_mean), 
              y = direction_mean)) +
@@ -151,12 +187,17 @@ Citation_Data %>%
        x = "Justices",
        y = "Ideological Direction") +
   theme_bw() +
+  
+  # I had to do this on most of my graphs in order to see each justice's full
+  # name.
+  
   theme(axis.text.x = element_text(angle = 90))
 ```
 
 ```{r}
 
-# How do I make this an interactive graph you can toggle the president?
+# I made this an interactive graph where you can toggle the president in my
+# shiny app.
 
 Citation_Data %>% 
   filter(president == "Roosevelt") %>% 
@@ -174,14 +215,28 @@ Citation_Data %>%
 
 ```{r}
 
-# How can I better look at trends between the way that justices voted and the issue type?
+# I ended up not including this graph in my shiny app. I was expecting the data
+# to show more obvious trends, but it does not. In and of itself, that is not a
+# bad thing. The point of my project is to explore the data, so seeing no
+# pattern is just as interesting as seeing one. However, I think the different
+# issue areas are confusing because some areas don't have data for all of the
+# justices. I could keep it this graph in my project, but it doesn't add
+# anything to the project, and I think it actually takes away from the rest of
+# it.
 
-Citation_Data %>% 
-  filter(justiceName == "RBGinsburg") %>% 
-  drop_na(direction) %>% 
-  distinct(sctCite, .keep_all = TRUE) %>% 
-  filter(issueArea_name %in% c("Civil Rights", "Economic Activity")) %>% 
+Citation_Data %>%
+  filter(justiceName == "RBGinsburg") %>%
+  drop_na(direction) %>%
+  distinct(sctCite, .keep_all = TRUE) %>%
+  filter(issueArea_name %in% c("Civil Rights", "Economic Activity")) %>%
   ggplot(aes(x = sctCite, y = direction)) +
+  
+  # I used geom_jitter instead of geom_point so that you can actually see the
+  # different points. I realized it doesn't matter were exactly the points are
+  # so long as they are in the area of liberal or in the area of conservative
+  # because the only options for y are 1 or 2, meaning there are no values in
+  # between. I then added an alpha argument to make it even more clear.
+  
   geom_jitter(height = 0.05, alpha = 0.75) +
   facet_wrap( ~issueArea_name, ncol = 4) +
   labs(title = "Ideological Direction by Issue",
@@ -193,11 +248,26 @@ Citation_Data %>%
         axis.ticks.x = element_blank(),
         axis.text.y = element_text(angle = 90, hjust = 0.5)) +
   scale_y_continuous(breaks = c(1, 2),
+                     
+                     # I changed these labels to liberal and conservative
+                     # because, unlike the other graphs, I did not take the
+                     # average ideological direction for each judge, I simply
+                     # left the direction as is. Thus, the only y values were 1
+                     # or 2, representing conservative or liberal.
+                     
                      labels = c("Conservative", "Liberal"))
+
 ```
 
 Is the chief justice typically in the majority?
 ```{r}
+
+# This one isn't an interactive graph, so I put it into my project as is. I am
+# fascinated by the dynamics of the Supreme Court, and I always wonder what kind
+# of role the chief justice plays, so this was really interesting for me to see.
+# There isn't much of a pattern, but the chiefs are in the majority slightly
+# more than others.
+
 Citation_Data %>%
   group_by(justiceName) %>% 
   mutate(n_maj = sum(majority == 2, na.rm = TRUE),
@@ -215,28 +285,34 @@ Citation_Data %>%
 ```
 
 
-
-```{r, message=FALSE}
-model_edited <- Citation_Data %>% 
-  mutate(outcome = case_when(direction == 1 ~ 1,
-                             direction == 2 ~ 0)) %>% 
-  mutate(date = as.numeric(date))
-  
-model_2 <- stan_glm(data = model_edited,
-                    outcome ~ chief + justice_fullnames + date - 1,
-                    family = "binomial",
-                    refresh = 0)
-print(model_2, digits = 3)
-```
-
 ```{r}
+
+# I actually created model_3 in the test.Rmd. It tkok a couple hours to run, so
+# I decided to leave it in that Rmd and save it as a new object to use in this
+# one.
+
 print(model_3, digits = 3)
+
+# I then saved the model as an RDS object for the same reason. I didn't want my
+# shiny app to take hours to run, so I saved it as an object that already ran in
+# order to streamline my app.
 
 saveRDS(model_3, file = "justiceissue_model.rds")
 
+# This creates the regression table that you see at the beginning of my model
+# page.
+
 tbl_regression(justiceissue_model, intercept = TRUE) %>% 
-            as_gt() %>% 
-            tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
+  as_gt() %>% 
+  
+  # This line is more than 80 characters because I couldn't split it up easily.
+  
+  tab_header(title = "Regression of Ideological Leaning by Justice and Issue Area")
+
+# Next, I made a new tibble using this data. In the shiny app, I left the
+# justice choices up to the viewer, but I left the issue area as Civil Rights
+# regardless. As I mentioned earlier, some issue areas don't have data for each
+# justice, so it made less sense to let the viewer choose.
 
 new_obs <- tibble(justice_fullnames = c("Ruth Bader Ginsburg", "Neil Gorsuch"),
                   issueArea_name = "Civil Rights")
@@ -248,6 +324,11 @@ pe <- posterior_epred(model_3,
   pivot_longer(cols = 1:2, 
                names_to = "Parameter",
                values_to = "Direction")
+
+# Here is the code for my posterior probability distribution. I think this graph
+# is really cool actually. You can see which justices would vote similarly and
+# which would vote very differently. It's also interesting to see which have a
+# larger distribution and which tend to vote the same way more frequently.
 
 pe %>% 
 ggplot(aes(Direction, fill = Parameter)) +
@@ -264,6 +345,11 @@ ggplot(aes(Direction, fill = Parameter)) +
 ```
 
 ```{r}
+
+# This graph explores the ideological leaning over time. Some justices do have a
+# bit of a trend, such as RBG in this example, but they are relatively
+# consistent over time.
+
 Citation_Data %>% 
   mutate(date = as.numeric(date)) %>% 
   group_by(justice_fullnames, date) %>% 
@@ -271,6 +357,11 @@ Citation_Data %>%
   filter(justice_fullnames == "Ruth Bader Ginsburg") %>% 
   ggplot(aes(x = date, y = avg_direction_year)) +
   geom_point(color = "darkblue") +
+  
+  # I had trouble with geom_smooth at first because I hadn't mutated the date
+  # variable to be numeric. I didn't realize that the trend line wouldn't work
+  # on the numbers when they were categorized as characters.
+  
   geom_smooth(method = "lm", formula = y ~ x) +
   labs(title = "Average Ideological Direction Over Time",
        x = "Year",
@@ -280,19 +371,7 @@ Citation_Data %>%
   ylim(c(1, 2))
 ```
 
-```{r}
-timeplot <- Citation_Data %>% 
-  group_by(justice_fullnames, date) %>% 
-  mutate(avg_direction_year = mean(direction, na.rm = TRUE))
 
-fit_lm <- lm(avg_direction_year ~ date,
-             data = timeplot)
-
-timeplot$predlm <- predict(fit_lm)
-  
-ggplot(timeplot, mapping = aes(x = date, y = predlm)) +
-  geom_point() 
-```
 
 
 
